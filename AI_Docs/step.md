@@ -48,7 +48,7 @@
 時系列 TODO : DOM 追加 → スタイル → commit  
 補足 : Tailwind で `w-[960px] h-[720px]` を暫定指定  
 
-# Step2　GitHub Pages デプロイパイプライン  
+# Step2　GitHub Pages デプロイパイプライン (done)  
 参照(view_line_rangeコマンド等で取得) : 
   * ./AI_Docs/design.mdの下記項(行数範囲はdesign_toc.mdを参照) 
     * `9. ビルド & デプロイ` 
