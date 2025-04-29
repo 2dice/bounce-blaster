@@ -1,21 +1,12 @@
 # TODOリスト
 
-- [x] step_toc.mdとdesign_toc.mdを確認して行数範囲を把握
-- [x] step.mdの「ステップ概要」とstep1周辺の内容を把握
-- [x] design.mdの必要な項目を確認
-- [x] step1を実行
-  - [x] Step1-1：Vite + React + TS + Tailwind 雛形
-    - [x] Viteプロジェクト作成：`pnpm create vite@latest bounce-blaster --template react-ts`
-    - [x] TailwindCSS v3.4.17のセットアップ
-    - [x] 「Hello Bounce Blaster」を中央表示するように実装
-    - [x] 動作確認：`localhost:5173`にアクセスして文字が中央に表示されることを確認
-  - [x] Step1-2：Canvas プレースホルダ配置
-    - [x] <App>に`<canvas id="game-canvas">`要素を追加
-    - [x] canvas要素のサイズを960×720pxに設定
-    - [x] 背景色をbg-zinc-800、borderを追加
-    - [x] 動作確認：DevToolsでサイズ確認
-- [x] ステップ終了時の作業
-  - [x] log.mdに今回のステップで得られた知見を追記
-  - [x] step.mdの該当ステップに(done)を追記
-  - [x] 必要に応じてdesign.mdを更新
-  - [x] 変更をgitコミット
+- [ ] step2を実行
+  - [ ] GitHub Pages デプロイパイプライン
+    - [ ] `vite.config.ts`の確認と`base: '/bounce-blaster/'`設定
+    - [ ] `.github/workflows/deploy.yml`作成（actions-deploy-pages）
+    - [ ] GitHub CLIでPRを作成してデプロイを確認
+  - [ ] ステップ終了時の作業
+    - [ ] log.mdに今回のステップで得られた知見を追記
+    - [ ] step.mdの該当ステップに(done)を追記
+    - [ ] 必要に応じてdesign.mdを更新
+    - [ ] GitHub PR閉じる・mainブランチに戻る・pullする・次のブランチを切る

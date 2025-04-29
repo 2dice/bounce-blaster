@@ -8,7 +8,7 @@ gh-pages … GitHub Pages が自動生成する静的ブランチ（直接触れ
 1. `git switch -c feat/step1-init`  
 2. 実装 → commit（Husky が Lint/Prettier を自動実行）  
 3. `git push -u origin feat/step1-init`  
-4. GitHub mcpで Pull Request を作成  
+4. GitHub CLIで Pull Request を作成  
 5. CI (lint + test) が PASS → ユーザーが “Squash and merge”  
     → main に取り込まれた瞬間、Deploy ワークフローが dist を gh-pages へ push  
     (レビューの結果、変更が必要なら修正)
