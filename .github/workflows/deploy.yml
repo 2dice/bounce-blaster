@@ -6,12 +6,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions: { pages: write, id-token: write }
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
@@ -19,7 +22,9 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Build
         run: pnpm run build       # Vite → dist/
-      - uses: actions/upload-pages-artifact@v2
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-      - uses: actions/deploy-pages@v2
+      - id: deployment
+        uses: actions/deploy-pages@v4
