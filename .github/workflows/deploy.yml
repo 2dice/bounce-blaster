@@ -1,7 +1,7 @@
 name: Deploy Pages
 on:
   push:
-    branches: [main]        # mainにプッシュされたときだけ実行
+    branches: [main] # mainにプッシュされたときだけ実行
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
       - name: Build
-        run: pnpm run build       # Vite → dist/
+        run: pnpm run build # Vite → dist/
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
         with:

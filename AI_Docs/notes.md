@@ -4,7 +4,7 @@
 
 - ステップ開始時
   - `./AI_Docs/step.md`と`./AI_Docs/design.md`の必要な部分だけを読み出すために、`./AI_Docs/step_toc.md`と`./AI_Docs/design_toc.md`で各項目の行数範囲を確認する。
-  - 確認した行数範囲をもとに`./AI_Docs/step.md`の"凡例"と、これから行うステップ±1(step3ならstep2,3,4)の内容をview_line_rangeコマンド等で把握すること。
+  - 確認した行数範囲をもとに`./AI_Docs/step.md`の"凡例"と、これから行うステップ±1(step3ならstep2,3,4)の内容をview_fileコマンド等で把握すること。
   - `./AI_Docs/step.md`に記載されている"参照"は、`./AI_Docs/design_toc.md`で確認した行数範囲をもとに`./AI_Docs/design.md`の必要な項目だけ取得すること。
 - ステップ実行中
   - `pnpm run dev`実行前に、導入済みであればlint、formatter、テストを実行する。
@@ -16,5 +16,5 @@
   - `./AI_Docs/step.md`の該当ステップに`(done)`を追記すること。
   - `./AI_Docs/step.md`の該当ステップの内容が実作業と異なる場合、必要に応じて更新すること。
   - `./AI_Docs/step.md`の次以降のステップの内容が、適切な粒度になっていることを確認し、必要に応じて修正すること。
-  - step2からは`./AI_Docs/github.md`に則ってコミットし、GitHub CLIを使ってPRを作成すること。
+  - step2からは`./AI_Docs/github.md`に則ってcommit/pushし、GitHub CLIを使ってPRを作成すること。
   - デプロイを確認したら、mainブランチに戻ってpullし、次のブランチを切ってからタスクを終了すること。
