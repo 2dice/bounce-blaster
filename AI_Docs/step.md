@@ -74,7 +74,7 @@
 時系列 TODO : base 設定 → workflow → push dummy →ページ確認 → commit  
 補足 : キャッシュヒットのため `actions/cache@v3` も入れる
 
-# Step3　ESLint + Prettier + Husky + lint-staged
+# Step3　ESLint + Prettier + Husky + lint-staged (done)
 
 参照(view_fileコマンド等で取得) :
 

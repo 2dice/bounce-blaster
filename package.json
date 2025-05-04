@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm run lint && pnpm run format && vite",
-    "build": "node AI_Docs/extract-toc.js AI_Docs/design.md AI_Docs/step.md && tsc -b && vite build",
+    "build": "node AI_Docs/md-range-map.js AI_Docs/design.md AI_Docs/step.md && tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
