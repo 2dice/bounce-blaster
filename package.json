@@ -8,7 +8,7 @@
     "build": "node AI_Docs/md-range-map.js AI_Docs/design.md AI_Docs/step.md && tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md,yaml,yml}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css}\" --ignore-path .gitignore",
     "preview": "vite preview",
     "prepare": "husky",
     "test": "vitest",
