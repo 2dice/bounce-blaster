@@ -17,6 +17,6 @@ jobs:
       - name: Lint
         run: pnpm lint
       - name: Format Check
-        run: pnpm format:check
+        run: prettier --check "**/*.{js,jsx,ts,tsx,json,css}" --ignore-path .gitignore
       - name: Test
         run: pnpm test:run
