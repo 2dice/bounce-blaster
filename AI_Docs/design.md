@@ -1,190 +1,215 @@
-設計書「Bounce Blaster」  
+設計書「Bounce Blaster」
 
 # 0. ドキュメント構造
 
-1. 目的・スコープ  
-2. 機能要件  
-3. 非機能要件  
-4. 画面／レイアウト仕様  
-5. データモデル  
-6. 物理エンジン仕様 (matter.js)  
-7. アプリケーションアーキテクチャ  
-8. ディレクトリ構成  
-9. ビルド & デプロイ  
-10. 実装フェーズ (スモールステップ計画)  
+1. 目的・スコープ
+2. 機能要件
+3. 非機能要件
+4. 画面／レイアウト仕様
+5. データモデル
+6. 物理エンジン仕様 (matter.js)
+7. アプリケーションアーキテクチャ
+8. ディレクトリ構成
+9. ビルド & デプロイ
+10. 実装フェーズ (スモールステップ計画)
 
-# 1. 目的・スコープ  
+# 1. 目的・スコープ
 
-* ブラウザ（iPad 横持ち / PC）で動作する 2D 反射シューティングゲーム。  
-* 常に“ユーザ指定のバウンド数(≤5)以内”でクリア可能なステージを自動生成。  
-* 将来の機能拡張（重力・摩擦）を考慮し、物理エンジンに matter.js を採用。  
+- ブラウザ（iPad 横持ち / PC）で動作する 2D 反射シューティングゲーム。
+- 常に“ユーザ指定のバウンド数(≤5)以内”でクリア可能なステージを自動生成。
+- 将来の機能拡張（重力・摩擦）を考慮し、物理エンジンに matter.js を採用。
 
 スコープ外：マルチプレイ、サウンド、キーボード対応、サーバ連携。
 
-# 2. 機能要件  
-## 2-1. ゲームフロー  
-  1. ステージ自動生成 (≤3 s)  
-  2. 照準ドラッグ → 発射  
-  3. 弾がターゲット命中＝成功／規定反射数超え＝失敗  
-  4. 1 秒後に自動リセット → 次ステージ 1. へ
+# 2. 機能要件
 
-## 2-2. ステージ自動生成  
-* 入力：maxBounce(1-5)・表示領域寸法  
-* 出力：Stage オブジェクト（§5）  
-* アルゴリズム：逆算生成（詳細 §6-4）
+## 2-1. ゲームフロー
 
-## 2-3. ユーザインタラクション  
-* タップ／クリック＆ドラッグ：照準線表示  
-* ドラッグリリース：発射  
-* SelectBox：maxBounce 変更で次ステージから反映
+1. ステージ自動生成 (≤3 s)
+2. 照準ドラッグ → 発射
+3. 弾がターゲット命中＝成功／規定反射数超え＝失敗
+4. 1 秒後に自動リセット → 次ステージ 1. へ
 
-## 2-4. 視覚エフェクト  
-* 発射フラッシュ、トレイル残像、ヒット火花  
-* FPS30 を割らない範囲でパーティクル 30 個／弾上限 1 発
+## 2-2. ステージ自動生成
 
-## 2-5. 失敗・再挑戦  
-* 反射上限超過 or ターゲット外周退出で弾を消去し「失敗」ラベル点滅 0.5 s
+- 入力：maxBounce(1-5)・表示領域寸法
+- 出力：Stage オブジェクト（§5）
+- アルゴリズム：逆算生成（詳細 §6-4）
 
-# 3. 非機能要件  
-* FPS　　　 ：最低 30、目標 60  
-* 生成時間 ：3 s 以内（オーバーレイ進捗表示）  
-* 対応端末 ：iPadOS16+ Safari / Chrome 115+ / Edge 115+  
-* レスポンシブ：横 100 %、縦アスペクト 4:3 → 黒帯処理  
-* デプロイ　：GitHub Pages 静的ホスティング  
-* アクセシビリティ：タッチ／マウスのみ
+## 2-3. ユーザインタラクション
 
-# 4. 画面／レイアウト仕様  
+- タップ／クリック＆ドラッグ：照準線表示
+- ドラッグリリース：発射
+- SelectBox：maxBounce 変更で次ステージから反映
 
-## 4-1. ベースビューポート  
-iPad 横：1024 × 768 (4:3) を論理基準とし、任意解像度へスケール。  
+## 2-4. 視覚エフェクト
 
-## 4-2. パーツ寸法（基準値）  
-Canvas　　　   : 960 × 720（左右 32 px 余白）  
-ControlBar      : 高さ 48 px (Canvas 下部に固定)  
-┣ SelectBox    : 幅 120 px  
-┣ FPSCounter※ : 幅  80 px (DEVのみ)  
-Overlay (生成) : 全面 α0.6 黒 + 中央 240 × 60 px プログレスバー  
+- 発射フラッシュ、トレイル残像、ヒット火花
+- FPS30 を割らない範囲でパーティクル 30 個／弾上限 1 発
 
-## 4-3. UI レイアウト図（テキスト簡易）  
+## 2-5. 失敗・再挑戦
+
+- 反射上限超過 or ターゲット外周退出で弾を消去し「失敗」ラベル点滅 0.5 s
+
+# 3. 非機能要件
+
+- FPS　　　 ：最低 30、目標 60
+- 生成時間 ：3 s 以内（オーバーレイ進捗表示）
+- 対応端末 ：iPadOS16+ Safari / Chrome 115+ / Edge 115+
+- レスポンシブ：横 100 %、縦アスペクト 4:3 → 黒帯処理
+- デプロイ　：GitHub Pages 静的ホスティング
+- アクセシビリティ：タッチ／マウスのみ
+
+# 4. 画面／レイアウト仕様
+
+## 4-1. ベースビューポート
+
+iPad 横：1024 × 768 (4:3) を論理基準とし、任意解像度へスケール。
+
+## 4-2. パーツ寸法（基準値）
+
+Canvas　　　 : 960 × 720（左右 32 px 余白）  
+ControlBar : 高さ 48 px (Canvas 下部に固定)  
+┣ SelectBox : 幅 120 px  
+┣ FPSCounter※ : 幅 80 px (DEVのみ)  
+Overlay (生成) : 全面 α0.6 黒 + 中央 240 × 60 px プログレスバー
+
+## 4-3. UI レイアウト図（テキスト簡易）
+
 ┌──────────────────────────────┐  
-│                    Canvas (960×720)                    │  
+│ Canvas (960×720) │  
 └──────────────────────────────┘  
 ┌───────────────┬───────────┐  
-│  Max Bounce ▼        │  FPS: 58 │ ← DEV時のみ│  
-└───────────────┴───────────┘  
+│ Max Bounce ▼ │ FPS: 58 │ ← DEV時のみ│  
+└───────────────┴───────────┘
 
-## 4-4. 表示例  
-* MaxBounce=3、砲台(150,650)、ターゲット(700,120)、壁４枚。  
-* 照準ドラッグ中は黄ライン→白反射線（点線）。  
-* 発射後は弾に赤トレイル、小火花エフェクト gif 8 frames。
+## 4-4. 表示例
 
-# 5. データモデル  
+- MaxBounce=3、砲台(150,650)、ターゲット(700,120)、壁４枚。
+- 照準ドラッグ中は黄ライン→白反射線（点線）。
+- 発射後は弾に赤トレイル、小火花エフェクト gif 8 frames。
+
+# 5. データモデル
+
 ```
-type Point = { x:number; y:number }  
-type Rect  = { x:number; y:number; w:number; h:number }  
+type Point = { x:number; y:number }
+type Rect  = { x:number; y:number; w:number; h:number }
 
-interface Stage {           // 生成結果  
-  width: number; height: number;  
-  maxBounce: 1|2|3|4|5;  
-  cannon:  Point;           // 砲台中心  
-  target:  Point;           // ターゲット中心  
-  walls:   Rect[];          // Static blocks  
-  solution: Point[];        // バウンド点列 (内部デバッグ用)  
+interface Stage {           // 生成結果
+  width: number; height: number;
+  maxBounce: 1|2|3|4|5;
+  cannon:  Point;           // 砲台中心
+  target:  Point;           // ターゲット中心
+  walls:   Rect[];          // Static blocks
+  solution: Point[];        // バウンド点列 (内部デバッグ用)
 }
 
-interface GameState {       // React useReducer 予定  
-  phase: 'generating'|'aiming'|'firing'|'success'|'fail';  
-  stage : Stage;  
-  bullet?: Matter.Body;  
+interface GameState {       // React useReducer 予定
+  phase: 'generating'|'aiming'|'firing'|'success'|'fail';
+  stage : Stage;
+  bullet?: Matter.Body;
 }
 ```
 
-# 6. 物理エンジン仕様 (matter.js)  
+# 6. 物理エンジン仕様 (matter.js)
 
-## 6-1. World 設定  
-gravity        : { x:0, y:0 }           // 重力オフ  
-timing.timeScale: 1                     // デフォルト  
-broadphase      : grid (幅 100 px cell) // パフォーマンス向上  
+## 6-1. World 設定
 
-## 6-2. Body 定義  
-Wall   : Bodies.rectangle(...)         static:true, restitution:1, friction:0  
-Target : Bodies.circle( r=18 )         isSensor:true  (衝突検出のみ)  
+gravity : { x:0, y:0 } // 重力オフ  
+timing.timeScale: 1 // デフォルト  
+broadphase : grid (幅 100 px cell) // パフォーマンス向上
+
+## 6-2. Body 定義
+
+Wall : Bodies.rectangle(...) static:true, restitution:1, friction:0  
+Target : Bodies.circle( r=18 ) isSensor:true (衝突検出のみ)  
 Cannon : 座標記録のみ（描画専用、Body 不要）  
-Bullet : Bodies.circle( r=12 )         restitution:1, friction:0, label:'bullet'  
+Bullet : Bodies.circle( r=12 ) restitution:1, friction:0, label:'bullet'
 
-## 6-3. 衝突カテゴリ  
+## 6-3. 衝突カテゴリ
+
 0x0001 = walls  
 0x0002 = bullet  
 0x0004 = target  
 Bullet.collidesWith = walls | target
 
-## 6-4. ステージ生成アルゴリズム  
-1. サイズ W,H を入力  
-2. maxBounce N を取得  
-3. 
+## 6-4. ステージ生成アルゴリズム
+
+1. サイズ W,H を入力
+2. maxBounce N を取得
+3.
+
 ```
-while true {  
-    cannon = randPoint(margin)  
-    target = randPoint(margin)  
-    seq    = randomRefSeq(N)    // 例: ['R','R','T']  
-    path   = mirrorSolve(cannon,target,seq,W,H)  
-    if path.valid(): break       // 解が出た  
+while true {
+    cannon = randPoint(margin)
+    target = randPoint(margin)
+    seq    = randomRefSeq(N)    // 例: ['R','R','T']
+    path   = mirrorSolve(cannon,target,seq,W,H)
+    if path.valid(): break       // 解が出た
 }
 ```
 
-4. 
+4.
+
 ```
- walls = []  
-    while walls.length < desiredCount {  
-        r = randRect()  
-        if path.intersectRect(r) == false: walls.push(r)  
+ walls = []
+    while walls.length < desiredCount {
+        r = randRect()
+        if path.intersectRect(r) == false: walls.push(r)
     }
-```  
+```
+
 5. return Stage{…}
 
-* mirrorSolve(): 鏡像法。外周壁のみを考慮してバウンド点列を計算。  
-* バウンド点が 0≤x≤W, 0≤y≤H 内になるかチェック。
+- mirrorSolve(): 鏡像法。外周壁のみを考慮してバウンド点列を計算。
+- バウンド点が 0≤x≤W, 0≤y≤H 内になるかチェック。
 
-# 7. アプリケーションアーキテクチャ  
+# 7. アプリケーションアーキテクチャ
 
-## 7-1. 技術スタック  
-* Front  : Vite + React + TypeScript
-* Style  : Tailwind CSS (JIT)  
-* Engine : matter.js 
-* Build  : pnpm / esbuild (Vite 内)  
-* CI/CD : GitHub Actions → Pages  
+## 7-1. 技術スタック
 
-開発支援  
-* ESLint + Prettier + Husky + lint-staged  
-* Vitest + React Testing Library  
-* GitHub Actions：CI → GitHub Pages deploy  
+- Front : Vite + React + TypeScript
+- Style : Tailwind CSS (JIT)
+- Engine : matter.js
+- Build : pnpm / esbuild (Vite 内)
+- CI/CD : GitHub Actions → Pages
 
-## 7-2. React コンポーネントツリー  
+開発支援
+
+- ESLint + Prettier + Husky + lint-staged
+- Vitest + React Testing Library
+- GitHub Actions：CI → GitHub Pages deploy
+
+## 7-2. React コンポーネントツリー
+
 ```
-<App>  
- ├─ <GameCanvas>                // Canvas & matter.js World  
- │    ├ useMatterEngine() hook  // Engine init / step loop  
- │    └ useAimGuide() hook      // 反射予測線描画  
- ├─ <ControlBar>  
- │    └ <MaxBounceSelect>  
- ├─ <OverlayGenerating/>  
- ├─ <OverlayResult type=success|fail/>  
+<App>
+ ├─ <GameCanvas>                // Canvas & matter.js World
+ │    ├ useMatterEngine() hook  // Engine init / step loop
+ │    └ useAimGuide() hook      // 反射予測線描画
+ ├─ <ControlBar>
+ │    └ <MaxBounceSelect>
+ ├─ <OverlayGenerating/>
+ ├─ <OverlayResult type=success|fail/>
  └─ <DebugPanel/> (DEV)
 ```
 
-## 7-3. ステート管理  
-* ```useReducer(gameReducer, initialState) in <App>  ```
-* Context.Provider で下位へ配布 (read-only)  
-* 生成完了/衝突検出で dispatch  → phase 遷移
+## 7-3. ステート管理
 
-## 7-4. 描画レイヤー  
-1. BG (塗りつぶし)  
-2. Static walls / cannon / target  
-3. Bullet & パーティクルトレイル  
-4. AimGuide (ドラッグ中のみ)  
+- `useReducer(gameReducer, initialState) in <App>  `
+- Context.Provider で下位へ配布 (read-only)
+- 生成完了/衝突検出で dispatch → phase 遷移
+
+## 7-4. 描画レイヤー
+
+1. BG (塗りつぶし)
+2. Static walls / cannon / target
+3. Bullet & パーティクルトレイル
+4. AimGuide (ドラッグ中のみ)
 5. Overlay (生成/結果/DEV)
 
-# 8. ディレクトリ構成 (予定)  
+# 8. ディレクトリ構成 (予定)
+
 ```
 .github/
 └─ workflows/
@@ -274,17 +299,18 @@ CONTRIBUTING.md             # コントリビュート規約・PR ガイド
 LICENSE                     # MIT ライセンス本文
 ```
 
-# 9. ビルド & デプロイ  
-* pnpm install  
-* pnpm run dev        → ローカル確認  
-* pnpm run build      → dist/  
-* GitHub Actions:  
-   on push main → pnpm i → pnpm build → actions-deploy-pages  
+# 9. ビルド & デプロイ
+
+- pnpm install
+- pnpm run dev → ローカル確認
+- pnpm run build → dist/
+- GitHub Actions:  
+   on push main → pnpm i → pnpm build → actions-deploy-pages
 
 # 付録Ａ：画面遷移ステートチャート（簡易）
 
- generating ─┐  
-              ▼  
-   aiming → firing → success  
-     ▲         │        │  
-     └── fail ◀─────────┘ (1 s 後 generating)
+generating ─┐  
+ ▼  
+ aiming → firing → success  
+ ▲ │ │  
+ └── fail ◀─────────┘ (1 s 後 generating)
