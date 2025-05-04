@@ -95,7 +95,7 @@
 時系列 TODO : eslintrc → prettier → husky install → commit  
 補足 : VSCode 用 `.vscode/settings.json` 追加推奨
 
-# Step4　Vitest + React Testing Library 導入
+# Step4　Vitest + React Testing Library 導入 (done)
 
 参照(view_fileコマンド等で取得) :
 

@@ -1,2 +1,2 @@
-Posts a code review in Japanese language.
-The review should be brief and include a summary, problem areas, and methods for improvement, each in bulleted form.
+コードレビューは日本語で投稿すること。
+レビューは簡潔に、要約・問題点・改善方法をそれぞれ箇条書きで記載すること。
