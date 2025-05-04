@@ -1,52 +1,51 @@
-# TODOリスト
+# TODOリスト - Step 4: Vitest + React Testing Library 導入
 
-## Step3: ESLint + Prettier + Husky + lint-staged 設定
+## 概要
 
-- [x] 現状の確認とインストール済みパッケージの確認
+このステップでは、Vitestと@testing-library/reactを導入して、テスト環境を整備します。
 
-  - 完了条件: 既存のESLint設定とインストールされているパッケージの状態を把握
+## タスク
 
-- [x] 必要なパッケージのインストール
+- [x] 現在の環境状態確認
+  - [x] プロジェクト構造確認
+  - [x] 既存のpackage.jsonの依存関係確認
+  - [x] 完了条件: プロジェクトの現状を正確に把握している
+- [x] Vitestと関連パッケージのインストール
 
-  - [x] Prettierのインストール
-  - [x] AirBnB設定のインストール
-  - [x] Tailwind CSS用プラグインのインストール
-  - [x] Husky + lint-stagedのインストール
-  - 完了条件: すべての必要なパッケージがpackage.jsonに含まれている
+  - [x] `pnpm add -D vitest @testing-library/react @testing-library/jest-dom jsdom happy-dom`のコマンド実行
+  - [x] インストール成功確認
+  - [x] 完了条件: すべてのパッケージが正常にインストールされている
 
-- [x] ESLint設定ファイルの作成・設定
+- [x] Vitestの設定ファイル作成
 
-  - [x] AirBnB設定の適用
-  - [x] TypeScript設定の適用
-  - [x] React関連の設定
-  - [x] Tailwind CSS用設定
-  - 完了条件: `pnpm run lint`でエラーが0となる
+  - [x] `vitest.config.ts`ファイルの作成
+  - [x] ESBuild aliasやその他の必要な設定を構成
+  - [x] 完了条件: 設定ファイルが問題なく動作することを確認
 
-- [x] Prettier設定ファイルの作成
+- [x] テスト用のセットアップファイル作成
 
-  - [x] ESLintとの連携設定（eslint-config-prettier）
-  - 完了条件: `pnpm run format`コマンドが動作する
+  - [x] `tests/setup.ts`ファイルの作成
+  - [x] Testing Libraryの拡張マッチャーをインポート
+  - [x] 完了条件: セットアップファイルがテスト実行時に問題なく読み込まれる
 
-- [x] Husky + lint-stagedの設定
+- [x] サンプルテストの作成
 
-  - [x] pre-commitフックの設定
-  - 完了条件: コミット前に自動的にlintとフォーマットが実行される
+  - [x] App.tsxのテストファイルを作成
+  - [x] Appコンポーネントが「Hello」テキストを含むかのテスト実装
+  - [x] 完了条件: `pnpm test`でテストが成功すること
 
-- [x] VSCode用設定ファイルの追加
+- [x] GitHub Actionsへのテスト実行追加
 
-  - 完了条件: `.vscode/settings.json`が適切に設定されている
+  - [x] `.github/workflows/ci.yml`の更新
+  - [x] `pnpm test --run`のコマンド追加
+  - [x] 完了条件: CIワークフローでテストが正常に実行されることを確認
 
-- [x] 動作確認
+- [x] コミットとPRの作成
+  - [x] 変更内容をgitにコミット
+  - [x] GitHub CLIを使用してPRを作成
+  - [x] 完了条件: CIがパスし、デプロイが成功していること
 
-  - [x] ESLintの動作確認済み（警告修正完了）
-  - [x] Prettierの動作確認済み（フォーマット完了）
-  - [x] コードを意図的に崩してcommitテスト（失敗確認/一時的にコミットされたが修正済み）
-  - [x] 修正してcommitテスト（成功確認）
-  - 完了条件: コミット前のフックが正しく動作する
+## 備考
 
-- [x] AI_Docs/step.mdの更新
-
-  - 完了条件: Step3に(done)が追記されている
-
-- [ ] GitHub PRの作成
-  - 完了条件: PRが正しく作成され、CIが成功する
+- Vitestはブラウザのような環境をエミュレートするためにjsdomかhappy-domが必要
+- 以降のすべての機能開発でテストを追加していく基盤になる重要な作業

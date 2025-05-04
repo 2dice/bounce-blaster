@@ -49,3 +49,75 @@
   - ロックファイルをリポジトリに含めるか、`--no-frozen-lockfile`オプションを使う必要がある
 - GitHub CLIで日本語メッセージを使うときは文字化けに注意
   - ファイルに書き出して`--body-file`オプションを使うと安全
+
+## Step3: ESLint + Prettier + Husky + lint-staged
+
+### うまくいった手法/手順
+
+- ESLint v9に対応するための設定は以下の手順で行った:
+  1. `eslint.config.js`を作成し、フラットな設定形式を使用
+  2. ESLint v9では従来のAirBnB設定を直接扱えないため、必要なルールを個別に適用
+  3. TypeScriptとReactの設定を適切に連携
+- Prettier導入手順:
+  1. `pnpm add -D prettier eslint-config-prettier`でパッケージをインストール
+  2. `.prettierrc.json`に基本設定を記述
+  3. package.jsonの`scripts`に`format`コマンドを追加
+  4. eslintと連携するために`eslint-config-prettier`を設定に追加
+- Husky + lint-stagedのセットアップ:
+  1. `pnpm dlx husky init`でHuskyを初期化
+  2. `.husky/pre-commit`ファイルにlint-stagedを実行するコマンドを追加
+  3. 実行権限を`chmod +x`で付与
+  4. `.lintstagedrc`ファイルで各ファイル種別ごとの処理を定義
+
+### 汎用的なナレッジ
+
+- コード品質を保つための仕組みは、プロジェクトの早い段階で導入すると後の手戻りが少なくなる
+- 自動フォーマット・リントの仕組みを導入することで、チーム開発でのコードスタイルの統一が容易になる
+- 問題が発生したらまず単純な形で再現し、段階的に修正することで解決が早くなる
+- コミット前のフックで自動チェックをするとエラーコードの混入を防げる
+
+### 具体的なナレッジ
+
+- ESLint v9から設定形式が大きく変わり、フラットな構造になった
+  - AirBnBやstandardといった既存の設定パッケージとの互換性に問題があるケースがある
+  - 必要に応じて個別にルールを適用する方法が有効
+- Huskyのpre-commitフックファイルには必ず実行権限の付与が必要
+  - `chmod +x .husky/pre-commit`を忘れるとフックが動作しない
+  - 同様にファイルの内容が正しく改行されていることも重要
+- VSCodeの設定ファイル`.vscode/settings.json`は`.gitignore`で除外されていることが多いので注意
+  - チーム内で共有したい場合は`.gitignore`の設定を変更する必要がある
+- npm/pnpmコマンドを使うときは、package.jsonで定義されたスクリプト名をチェックすることが重要
+  - `npm run`と`pnpm run`で実行できるコマンドは異なることがあるため注意
+
+## Step4: Vitest + React Testing Library 導入
+
+### うまくいった手法/手順
+
+- VitestとReact Testing Libraryの導入手順：
+  1. `pnpm add -D vitest @testing-library/react @testing-library/jest-dom jsdom happy-dom`でパッケージをインストール
+  2. `vitest.config.ts`にテスト環境設定（environment：'jsdom', globals：trueなど）を記述
+  3. `tests/setup.ts`ファイルでjest-domマッチャーとクリーンアップを設定
+  4. package.jsonに`test`と`test:run`スクリプトを追加
+- GitHub ActionsのCIワークフロー設定：
+  1. `.github/workflows/ci.yml`ファイルを作成
+  2. push/pull_request時に自動実行されるようにトリガー設定
+  3. lint、formatチェック、テストの三つのステップを設定
+
+### 汎用的なナレッジ
+
+- テスト環境はなるべく早い段階で導入しておくことで、テスト駆動開発（TDD）を実践しやすくなる
+- テストではユーザーの振る舞いをシミュレートすることで、コンポーネントの実際の動作を検証できる
+- CIパイプラインで自動テストを実行することで、バグの早期発見とリグレッション防止が可能になる
+- 小さなテストから始めて少しずつ複雑なテストに移行すると、弊害切り分けがしやすくなる
+
+### 具体的なナレッジ
+
+- @testing-library/jest-domの最新バージョン（v6以上）では、インポート方法が変更されている
+  - 古いバージョン：`import matchers from '@testing-library/jest-dom/matchers'`
+  - 最新バージョン：`import '@testing-library/jest-dom'`（自動拡張）
+- VitestではReactコンポーネントのテストにブラウザ環境のエミュレーションが必要
+  - jsdomまhappy-domのどちらかを選択する必要がある
+  - テストとメインコードのパス解決を一致させるため、vite.config.tsと同様のalias設定が必要
+- GitHub Actionsのワークフローファイルは既存のCI/CD設定とスタイルを合わせることが重要
+  - 同じプロジェクト内で設定が不揃いだとメンテナンスが困難になる
+  - 最適化のために、キャッシュの有効活用や必要なステップのみの実行が重要
