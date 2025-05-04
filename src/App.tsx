@@ -8,6 +8,7 @@ function App() {
       </h1>
       <canvas
         id="game-canvas"
+        data-testid="game-canvas"
         className="h-[720px] w-[960px] border bg-zinc-800"
       />
     </div>

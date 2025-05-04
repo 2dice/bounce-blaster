@@ -23,13 +23,13 @@ describe('App', () => {
     // Appコンポーネントをレンダリング
     render(<App />);
 
-    // canvasが存在するか確認
-    const canvasElement = document.getElementById('game-canvas');
+    // canvasが存在するか確認（data-testid属性で特定）
+    const canvasElement = screen.getByTestId('game-canvas');
 
     // canvasが存在するか確認
     expect(canvasElement).toBeInTheDocument();
 
     // canvasタグであることを確認
-    expect(canvasElement?.tagName).toBe('CANVAS');
+    expect(canvasElement.tagName).toBe('CANVAS');
   });
 });
