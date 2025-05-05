@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "pnpm run lint && pnpm run format && vite",
+    "dev": "pnpm run lint && pnpm run format && pnpm tsc --noEmit && vite",
     "build": "node AI_Docs/md-range-map.js AI_Docs/design.md AI_Docs/step.md && tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -16,6 +16,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "matter-js": "^0.20.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -23,6 +24,7 @@
     "@eslint/js": "^9.22.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "@types/matter-js": "^0.19.8",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
