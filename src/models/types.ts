@@ -1,7 +1,7 @@
 /**
  * ゲームの基本的なデータ型定義
  */
-import Matter from 'matter-js';
+import { Body } from 'matter-js';
 
 /**
  * 2D上の点を表す型
@@ -41,5 +41,5 @@ export interface Stage {
 export interface GameState {
   readonly phase: 'generating' | 'aiming' | 'firing' | 'success' | 'fail';
   readonly stage: Stage;
-  readonly bullet?: Matter.Body;
+  readonly bullet?: Body;
 }
