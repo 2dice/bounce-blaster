@@ -6,7 +6,7 @@ File: AI_Docs/step.md
 # Step2　GitHub Pages デプロイパイプライン (done) (StartLine=56, EndLine=75)
 # Step3　ESLint + Prettier + Husky + lint-staged (done) (StartLine=76, EndLine=96)
 # Step4　Vitest + React Testing Library 導入 (done) (StartLine=97, EndLine=118)
-# Step5-1　データモデル定義 & 型テスト (StartLine=119, EndLine=138)
+# Step5-1　データモデル定義 & 型テスト (done) (StartLine=119, EndLine=138)
 # Step5-2　GameState / Reducer の骨組み (StartLine=139, EndLine=158)
 # Step6　StageGenerator スタブ（固定ステージ） (StartLine=159, EndLine=177)
 # Step7-1　matter.js World 初期化 & 外周壁 (StartLine=178, EndLine=204)

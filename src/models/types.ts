@@ -1,6 +1,7 @@
 /**
  * ゲームの基本的なデータ型定義
  */
+import Matter from 'matter-js';
 
 /**
  * 2D上の点を表す型

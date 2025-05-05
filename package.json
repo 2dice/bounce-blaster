@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "pnpm run lint && pnpm run format && vite",
+    "dev": "pnpm run lint && pnpm run format && pnpm tsc --noEmit && vite",
     "build": "node AI_Docs/md-range-map.js AI_Docs/design.md AI_Docs/step.md && tsc -b && vite build",
     "lint": "eslint .",
     "format": "prettier --write .",
