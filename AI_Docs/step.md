@@ -117,7 +117,7 @@
 時系列 TODO : install → config → test file → workflow update → commit  
 補足 : 以降すべての機能テストを Vitest に追加していく
 
-# Step5-1　データモデル定義 & 型テスト
+# Step5-1　データモデル定義 & 型テスト (done)
 
 参照(view_fileコマンド等で取得) :
 
