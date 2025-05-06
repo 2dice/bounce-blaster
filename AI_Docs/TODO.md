@@ -1,45 +1,43 @@
 # TODOリスト
 
-## Step5-1　データモデル定義 & 型テスト
+## Step 5-2　GameState / Reducer の骨組み
 
-- [x] 1. プロジェクト構造の確認
+- [x] models/enums.ts ファイルを作成
 
-  - [x] 必要なディレクトリ（src/models）の存在確認
-  - [x] 必要なディレクトリがなければ作成
-  - [x] 完了条件: ディレクトリ構造が整っていること
+  - [x] Phase enumを定義する（generating, aiming, firing, success, fail）
+  - [x] ActionTypes enumを定義する（GENERATING, READY, FIRE, SUCCESS, FAIL）
+  - 完了条件：enumが正しく定義され、TypeScriptエラーが発生しないこと
 
-- [x] 2. データモデル定義
+- [x] models/reducer.ts ファイルを作成
 
-  - [x] src/models/types.ts ファイルの作成
-  - [x] Point型の定義
-  - [x] Rect型の定義
-  - [x] Stage型の定義
-  - [x] GameState型の定義
-  - [x] 完了条件: 型定義が設計書通りに実装され、エクスポートされていること
+  - [x] 初期状態（initialState）を定義する
+  - [x] gameReducerを実装する
+  - [x] 4つのアクション（READY, FIRE, SUCCESS, FAIL）の処理を実装する
+  - 完了条件：reducerが正しく実装され、状態遷移が適切に行われること
 
-- [x] 3. 型の検証
+- [x] hooks/useGameReducer.ts ファイルを作成
 
-  - [x] TypeScript型チェックの実行（pnpm tsc --noEmit）
-  - [x] 完了条件: TypeScriptのエラーが0件であること
+  - [x] useGameReducerカスタムフックを実装する
+  - [x] GameContextを作成する
+  - [x] GameProvider Componentを実装する
+  - 完了条件：カスタムフックが正しく実装され、コンテキストが作成されること
 
-- [x] 4. Vitest型テストの作成
+- [x] App.tsxにGameProviderを組み込む
 
-  - [x] typesのテストファイル作成
-  - [x] 型チェックテストケースの実装（ts-expect-errorなど）
-  - [x] テスト実行
-  - [x] 完了条件: テストが正常に実行され、意図したとおりに型チェックが機能すること
+  - [x] GameProviderでAppコンポーネントをラップする
+  - 完了条件：エラーなく正常にビルドが通ること
 
-- [x] 5. ビルドの通過確認
+- [x] テストの作成
 
-  - [x] ビルドコマンドの実行（pnpm run build）
-  - [x] 完了条件: ビルドがエラーなく完了すること
+  - [x] tests/reducer.test.tsを作成する
+  - [x] phase遷移のテストケースを実装する
+  - 完了条件：`expect(result.phase).toBe('firing')`などのテストが成功すること
 
-- [x] 6. UI表示確認
+- [x] 動作確認
 
-  - [x] 開発サーバーの起動（pnpm run dev）
-  - [x] ブラウザでUIが正常表示されることを確認
-  - [x] 完了条件: UIが壊れていないこと
+  - [x] `pnpm tsc --noEmit`でTypeScriptエラーがないことを確認
+  - [x] `pnpm test`でテストが通ることを確認
+  - 完了条件：すべてのテストがpassすること
 
-- [x] 7. コミットの準備
-  - [x] リントとフォーマットの実行
-  - [x] 完了条件: コード品質チェックをパスすること
+- [x] ドキュメント整理
+  - [x] design.mdのディレクトリ構造を今回の実装に合わせて修正する。

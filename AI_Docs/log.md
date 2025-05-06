@@ -157,3 +157,38 @@
 - 物理エンジン（matter.js）のような外部ライブラリを使う場合：
   - 型定義（@types/xxx）パッケージも一緒にインストールが必要
   - 型定義が古い場合は、拡張・上書きする方法も検討する
+
+## Step5-2: GameState / Reducer の骨組み
+
+### うまくいった手法/手順
+
+- Reduxパターンをシンプルに実装する手順：
+  1. `models/enums.ts`にPhaseとActionTypesの列挙型を定義
+  2. `models/reducer.ts`にアクション型、初期状態、reducer関数を実装
+  3. `contexts/GameContext.ts`と`contexts/GameProvider.tsx`でコンテキストとプロバイダーを分離
+  4. `hooks/useGameReducer.tsx`でカスタムフックを実装
+- Vitestを使ったreducerテスト作成手順：
+  1. `tests/reducer.test.ts`ファイルを作成
+  2. 各アクションに対するテストケースを作成
+  3. 初期状態、フェーズ遷移、payloadの受け渡しを確認
+
+### 汎用的なナレッジ
+
+- Reactのコンポーネントと非コンポーネントのコードを分離することで、Hot Module Replacementやパフォーマンスが向上する
+- 単一責任の原則を適用して、コンテキスト、プロバイダー、カスタムフックを分離するとコードの保守性が高まる
+- TypeScriptの列挙型を使用することで、タイプセーフな状態管理を実現できる
+- ユニットテストはコードの仕様と動作を探索・検証する手段として有効
+
+### 具体的なナレッジ
+
+- ESLintの警告を適切に対処する方法：
+  - React Fast Refreshのreact-refresh/only-export-components警告はファイル分割で解決できる
+  - 列挙型のno-unused-vars警告は`/* eslint-disable no-unused-vars */`で無効化
+  - 無効化する場合は必ずコメントで理由を明確に記述する
+- TypeScriptの型エラー対処：
+  - ユニオン型(`1 | 2 | 3 | 4 | 5`)の値を代入する場合は`as`キャストで型安全性を確保
+  - mockオブジェクトには`eslint-disable-next-line`コメントで警告を個別に無効化
+- React Context APIのベストプラクティス：
+  - コンテキスト定義とプロバイダーの分離
+  - カスタムフックで利用を簡素化
+  - コンテキストが存在しない場合のエラーハンドリング

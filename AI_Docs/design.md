@@ -228,7 +228,7 @@ public/
 
 src/
 ├─ components/
-│  ├─ App.tsx              # ルートコンポーネント；GameContext を提供
+│  ├─ App.tsx              # ルートコンポーネント
 │  ├─ GameCanvas.tsx       # Canvas 要素・描画・入力をまとめる
 │  ├─ CanvasLayer.ts       # off-screen キャンバス 1 枚を管理するユーティリティ
 │  ├─ ControlBar.tsx       # 画面下部 UI コンテナ
@@ -242,7 +242,12 @@ src/
 │     ├─ StageSeedDisplay.tsx  # 現在ステージのシード値を表示・コピー
 │     └─ ToggleGridButton.tsx  # 背景グリッドの表示 ON/OFF ボタン
 │
+├─ contexts/
+│  ├─ GameContext.ts       # ゲーム状態管理用のContext定義
+│  └─ GameProvider.tsx     # ゲーム状態管理用のProviderコンポーネント
+│
 ├─ hooks/
+│  ├─ useGameReducer.tsx   # ゲーム状態管理用のカスタムフック
 │  ├─ useMatterEngine.ts   # matter.js Engine を生成しアプリと同期
 │  ├─ useStageGenerator.ts # ステージを自動生成し progress を emit
 │  ├─ useAimGuide.ts       # 砲台→マウス角度で反射ラインを計算
