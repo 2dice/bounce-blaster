@@ -1,5 +1,9 @@
 import './index.css';
+import { GameProvider } from './contexts/GameProvider';
 
+/**
+ * メインアプリケーションのコンポーネント
+ */
 function App() {
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-900 text-white">
@@ -15,4 +19,16 @@ function App() {
   );
 }
 
-export default App;
+/**
+ * GameProviderでラップしたアプリケーション
+ * これによりアプリ全体でゲーム状態を共有できる
+ */
+function AppWithProvider() {
+  return (
+    <GameProvider>
+      <App />
+    </GameProvider>
+  );
+}
+
+export default AppWithProvider;

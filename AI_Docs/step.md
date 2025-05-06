@@ -137,9 +137,8 @@
 時系列 TODO : type 定義 → tsc pass → vitest type test → commit  
 補足 : 将来の拡張のため `readonly` 修飾
 
-# Step5-2　GameState / Reducer の骨組み
+# Step5-2　GameState / Reducer の骨組み (done)
 
-参照 : 設計書 7-3 ステート管理  
 参照(view_fileコマンド等で取得) :
 
 - ./AI_Docs/design.mdの下記項(行数範囲はdesign_toc.mdを参照)

@@ -69,11 +69,11 @@ Settings → Pages → “Deploy from GitHub Actions” を選択（URL は変�
   feat(step12): AimGuide (予測反射ライン) 実装  
   fix(step7-2): 弾 Body 生成 & 手動発射（クリック位置方向）レビューコメントの内容を修正
 
-- PR テンプレ：
+- PR テンプレ(改行を正しく処理するため、一時ファイルを作成しgh pr createで--body-fileに指定すること)：
 
 ```
   ### 目的 / 関連ステップ
   ### 実装内容
-  ### 動作確認方法
+  ### 動作確認内容
   ### 備考
 ```
