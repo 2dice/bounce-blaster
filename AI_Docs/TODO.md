@@ -1,10 +1,11 @@
 # TODOリスト
 
-## Step7-1 matter.js World 初期化 & 外周壁
+## Step7-2 弾 Body 生成 & 手動発射
 
-- [x] matter-js を依存追加 (`pnpm add matter-js`)
-- [x] `useMatterEngine` フックを実装して Engine と外周壁 4 枚を生成する
-- [x] `GameCanvas` (仮) で `useMatterEngine` を呼び出し、壁を Canvas に描画する
-- [x] Vitest：`Engine.world.bodies.length === 4` をテストする
-- [x] 手動：ブラウザで Canvas に 4 辺の白線が表示されることを確認
-- [x] `npm run dev` でエラーがないことを確認
+- [x] Docs確認 (design 6-2, 6-3, 7, 8)【完了: 参照箇所を読んでコメントで理解を共有】
+- [x] GameCanvas onClick 実装【完了: クリック位置から bullet が発射される】
+- [x] useMatterEngine に Bullet Body 追加【完了: engine.world に bullet が含まれる】
+- [x] Bullet 物性値設定 (restitution=1, friction=0, frictionAir=0)【完了: 衝突後速度が保たれる】
+- [x] Vitest: 壁衝突後 |v| が不変であるテスト【完了: テスト pass、7%以内の誤差を許容】
+- [x] 手動テスト: Canvas 上で弾が跳ね返る【完了: 目視で確認】
+- [x] commit "feat: Step7-2 bullet fire"【完了: コミット提案済み】

@@ -202,7 +202,7 @@
 時系列 TODO : install → hook 改修 → canvas draw → tests → commit  
 補足 : 描画はまだラフで OK
 
-# Step7-2　弾 Body 生成 & 手動発射（クリック位置方向）
+# Step7-2　弾 Body 生成 & 手動発射（クリック位置方向） (done)
 
 参照(view_fileコマンド等で取得) :
 

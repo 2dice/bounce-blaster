@@ -10,7 +10,7 @@ File: AI_Docs/step.md
 # Step5-2　GameState / Reducer の骨組み (done) (StartLine=139, EndLine=157)
 # Step6　StageGenerator スタブ（固定ステージ） (done) (StartLine=158, EndLine=176)
 # Step7-1　matter.js World 初期化 & 外周壁 (done) (StartLine=177, EndLine=203)
-# Step7-2　弾 Body 生成 & 手動発射（クリック位置方向） (StartLine=204, EndLine=229)
+# Step7-2　弾 Body 生成 & 手動発射（クリック位置方向） (done) (StartLine=204, EndLine=229)
 # Step7-3　ターゲット Body & 衝突検知コールバック (StartLine=230, EndLine=256)
 # Step7-4　最大バウンド数ロジック実装 (StartLine=257, EndLine=278)
 # Step8-1　mirrorSolve() 実装（経路計算ユーティリティ） (StartLine=279, EndLine=301)
