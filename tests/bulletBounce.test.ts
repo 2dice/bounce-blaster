@@ -66,13 +66,6 @@ describe('Bullet bounce physics', () => {
       }
     }
 
-    console.log(
-      'initial',
-      initialSpeed,
-      'post',
-      Math.hypot(bullet.velocity.x, bullet.velocity.y),
-    );
-
     // 反射後の速度絶対値
     const postSpeed = Math.hypot(bullet.velocity.x, bullet.velocity.y);
 

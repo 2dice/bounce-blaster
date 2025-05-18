@@ -21,7 +21,11 @@ export interface UseMatterEngineOptions {
 export interface UseMatterEngineReturn {
   engine: MatterEngine;
   walls: Body[];
-  bulletCategory?: number;
+  /**
+   * 弾の衝突カテゴリ値 (Step7-3 で衝突検知に使用予定)
+   * @see design.md 6-3. 衝突カテゴリ
+   */
+  bulletCategory: number;
 }
 
 /**
@@ -107,5 +111,8 @@ export const useMatterEngine = (
     };
   }, [engine, walls]);
 
-  return { engine, walls };
+  // 衝突カテゴリ値を設定 (design.md 6-3. 衝突カテゴリに基づく)
+  const bulletCategory = 0x0002; // 0x0002 = bullet
+
+  return { engine, walls, bulletCategory };
 };
