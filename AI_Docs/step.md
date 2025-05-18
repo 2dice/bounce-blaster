@@ -156,7 +156,7 @@
 確認方法 : `expect(result.phase).toBe('firing')` 等  
 時系列 TODO : enum → reducer → provider → tests → commit
 
-# Step6　StageGenerator スタブ（固定ステージ）
+# Step6　StageGenerator スタブ（固定ステージ） (done)
 
 参照(view_fileコマンド等で取得) :
 

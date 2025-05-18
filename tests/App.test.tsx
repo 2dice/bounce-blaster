@@ -1,4 +1,6 @@
+// vitest から必要なものをまとめてインポート
 import { describe, it, expect } from 'vitest';
+// testing-library/react から必要なものをまとめてインポート
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import React from 'react';
