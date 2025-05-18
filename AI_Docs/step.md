@@ -175,7 +175,7 @@
 確認方法 : ログ & テスト pass  
 時系列 TODO : hook → reducer tie-in → tests → commit
 
-# Step7-1　matter.js World 初期化 & 外周壁
+# Step7-1　matter.js World 初期化 & 外周壁 (done)
 
 参照(view_fileコマンド等で取得) :
 

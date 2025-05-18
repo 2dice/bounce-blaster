@@ -230,3 +230,24 @@
 - **コードのクリーンアップ習慣**:
   - テストのための一時的なUI要素や、それ専用のテストケースは、役割を終えたら忘れずに削除する。
   - `import` 文は、関連コードの変更（特に削除）時に未使用のものが残らないよう常に注意する。ESLintの警告が役立ちます。
+
+## Step7-1: matter.js World 初期化 & 外周壁
+
+### うまくいった手法/手順
+
+- matter.js Engine を `useMatterEngine` フックでカプセル化し、`useEffect` で Runner の開始/停止を管理した
+- `useMemo` で Engine と外周壁(`Bodies.rectangle`)の生成を 1 回に抑制
+- 描画は `GameCanvas` 内で `requestAnimationFrame` を使い、Engine 更新と分離
+- Vitest で `engine.world.bodies.length` をアサートし、自動テストで壁生成を検証
+
+### 汎用的なナレッジ
+
+- 物理エンジンを React に組み込む際は「Engine/Runners と描画」の責務を分離するとリファクタしやすい
+- `JSDOM` では `canvas.getContext` が未実装 → テストでは呼ばない設計にするかモックを検討
+- `useMemo` を使うことで costly な Engine 作成を防ぎ、パフォーマンスを確保
+
+### 具体的なナレッジ
+
+- 壁は `restitution:1, friction:0, isStatic:true` で完全反射＆停止しない特性を実現
+- `Composite.clear(world, false, true)` で World をリセットすると参照が変わるので返り値(walls)とズレに注意
+- `cancelAnimationFrame` で描画ループをクリーンアップしないとテスト環境(jsdom)でリーク警告が出る
