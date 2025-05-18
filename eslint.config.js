@@ -54,7 +54,14 @@ export default tseslint.config(
 
       // AirBnB風のルール（エッセンス）
       'no-console': 'warn',
-      'no-unused-vars': 'warn',
+      'no-unused-vars': [
+        'warn',
+        { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
+      ],
       'prefer-const': 'warn',
       'arrow-body-style': ['warn', 'as-needed'],
       'no-param-reassign': 'warn',

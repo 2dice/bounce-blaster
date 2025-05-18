@@ -1,43 +1,108 @@
 # TODOリスト
 
-## Step 5-2　GameState / Reducer の骨組み
+# Step6　StageGenerator スタブ（固定ステージ）
 
-- [x] models/enums.ts ファイルを作成
+## 完了条件
 
-  - [x] Phase enumを定義する（generating, aiming, firing, success, fail）
-  - [x] ActionTypes enumを定義する（GENERATING, READY, FIRE, SUCCESS, FAIL）
-  - 完了条件：enumが正しく定義され、TypeScriptエラーが発生しないこと
+- `useStageGenerator` フックが呼び出されたら、10ms 以内に固定のステージデータを返すこと。
+- ステージ生成後、ゲームのフェーズが `generating` から `aiming` に遷移すること。
+- Vitest による単体テストが全てパスすること。
 
-- [x] models/reducer.ts ファイルを作成
+## タスク
 
-  - [x] 初期状態（initialState）を定義する
-  - [x] gameReducerを実装する
-  - [x] 4つのアクション（READY, FIRE, SUCCESS, FAIL）の処理を実装する
-  - 完了条件：reducerが正しく実装され、状態遷移が適切に行われること
+- [x] `src/hooks/useStageGenerator.ts` ファイルを作成する
+  - 完了条件: ファイルが指定のパスに作成されていること。
+- [x] `useStageGenerator` フックを実装する
+  - [x] `Stage` 型をインポートする (まだ存在しない場合は仮の型定義を `src/models/types.ts` に作成する)
+  - [x] 固定の `Stage` オブジェクトを返すようにする
+    - `cannon` の位置 (例: `{ x: 50, y: 500 }`)
+    - `target` の位置 (例: `{ x: 750, y: 100 }`)
+    - `walls` は空配列 `[]` でOK
+  - [x] `Promise<Stage>` を返すようにする
+  - [x] 10ms の遅延を `setTimeout` で擬似的に再現する
+  - 完了条件: フックが上記仕様通りに実装されていること。
+- [x] `useGameReducer` フックでステージ生成中の状態と、生成完了後の状態遷移を実装する
+  - [x] `gameReducer` に `GENERATE_STAGE_REQUEST` アクションを追加し、`phase` を `generating` に設定する (既存の `ActionTypes.GENERATING` を利用)
+  - [x] `gameReducer` に `GENERATE_STAGE_SUCCESS` アクションを追加し、`phase` を `aiming` に、`stage` をペイロードの値に設定する (既存の `ActionTypes.READY` を利用)
+  - [x] `App.tsx` (または適切な場所) で `useStageGenerator` を呼び出し、ステージ生成をトリガーする
+    - [x] `useEffect` を使って、適切なタイミング（例えば `phase` が `ready` の時など）でステージ生成を開始する
+    - [x] ステージ生成開始時に `GENERATE_STAGE_REQUEST` (`ActionTypes.GENERATING`) を dispatch する
+    - [x] `useStageGenerator` からステージデータが返ってきたら `GENERATE_STAGE_SUCCESS` (`ActionTypes.READY`) を dispatch する
+  - 完了条件: `dispatch` により `phase` が期待通りに遷移し、`stage` データが更新されること。
+- [x] `useStageGenerator.test.ts` を作成し、単体テストを記述する
+  - [x] `useStageGenerator.test.ts` ファイルを作成し、テストの骨組みとヘルパー（比較用定数など）を準備する
+  - [x] `useStageGenerator` が固定の `cannon` と `target` の座標を返すことを確認するテスト
+  - [x] 10ms 以上の時間が経過した後に `Stage` オブジェクトが返されることを確認するテスト (Vitest の `fakeTimers` を使用)
+  - 完了条件: 全てのテストがパスすること。
 
-- [x] hooks/useGameReducer.ts ファイルを作成
+1.  **開発サーバー起動時に画面が真っ白になる問題を解決する** 🕵️‍♀️
 
-  - [x] useGameReducerカスタムフックを実装する
-  - [x] GameContextを作成する
-  - [x] GameProvider Componentを実装する
-  - 完了条件：カスタムフックが正しく実装され、コンテキストが作成されること
+    - 完了条件: アプリが以前のように正常に表示されること。
+    - サブタスク:
+      - [ ] `pnpm run dev` を実行する。
+      - [ ] ブラウザの開発者コンソールを開いて、エラーメッセージや [App.tsx] に仕込んだ `console.log` の出力を確認する。
+      - [ ] ログを分析して、`generateStage` が期待通りに動作していない原因を特定する。
+      - [ ] 原因を特定したら、コードを修正する。
+      - [ ] 修正後、再度 `pnpm run dev` で表示を確認する。
 
-- [x] App.tsxにGameProviderを組み込む
+2.  **`useStageGenerator.test.ts` のテスト内容を確認・修正する。** 🧪
 
-  - [x] GameProviderでAppコンポーネントをラップする
-  - 完了条件：エラーなく正常にビルドが通ること
+    - 完了条件: `useStageGenerator` フックの最近の変更（`useState` と `useEffect` を使った初期化方法の変更）を考慮しても、テストが依然として正しく機能の検証を行っていることを確認・保証すること。必要であればテストケースを修正する。
+    - サブタスク:
+      - [ ] `useStageGenerator.ts` の変更点を再確認する。
+      - [ ] `useStageGenerator.test.ts` のテストが、変更後のロジックを正しくカバーできているか確認する。
+      - [ ] 必要であれば、テストのアサーションやセットアップを修正する。
+      - [ ] `pnpm run test` を実行して、テストがパスすることを確認する。
 
-- [x] テストの作成
+3.  **デバッグ用の `console.log` を削除する。** 🧹
 
-  - [x] tests/reducer.test.tsを作成する
-  - [x] phase遷移のテストケースを実装する
-  - 完了条件：`expect(result.phase).toBe('firing')`などのテストが成功すること
+    - 完了条件: 問題解決後、不要になったデバッグ用 `console.log` がコードから削除されていること。
+    - 対象ファイル: [src/App.tsx] など。
 
-- [x] 動作確認
+4.  最終確認
 
-  - [x] `pnpm tsc --noEmit`でTypeScriptエラーがないことを確認
-  - [x] `pnpm test`でテストが通ることを確認
-  - 完了条件：すべてのテストがpassすること
+- [ ] Formatter (`pnpm run format`) を実行する
+- [ ] Linter (`pnpm run lint`) を実行して問題を修正する
+- [ ] TypeScript の型エラー (`tsc --noEmit`) を確認、修正する
+- [ ] `pnpm run dev` で開発サーバーを起動する
 
-- [x] ドキュメント整理
-  - [x] design.mdのディレクトリ構造を今回の実装に合わせて修正する。
+* [ ] 動作確認
+
+- 完了条件: ブラウザでゲームを起動し、コンソールログや React DevTools で `phase` が `generating` → `aiming` に遷移し、`stage` データが設定されていることを確認する。\* [x] `App.test.tsx` に初期 `generating` フェーズのUI（一時的なインジケータ）表示と非表示を確認するテストを追加する。
+  - [ ] 一時的なテスト用インジケータを削除する。
+    - 完了条件: `App.tsx` からテスト用の `generating-indicator` が削除されていること。
+
+## 時系列 TODO
+
+1.  `src/models/types.ts` に (必要であれば) `Stage` 型を仮定義
+2.  `src/hooks/useStageGenerator.ts` 作成 & 実装
+3.  `src/models/reducer.ts` と `src/hooks/useGameReducer.tsx` (または関連ファイル) を修正して、ステージ生成アクションと状態遷移を実装
+4.  `App.tsx` (または適切な場所) で `useStageGenerator` を呼び出す処理を追加
+5.  `src/hooks/useStageGenerator.test.ts` 作成 & テスト記述
+6.  `pnpm run test` でテスト実行 & パス確認
+7.  ブラウザで動作確認
+8.  `git add . && git commit -m "feat: implement stub StageGenerator and phase transition"`
+9.  `git add . && git commit -m "feat: implement stub StageGenerator and phase transition"`
+
+- [x] lint の警告・エラーを修正する。
+- [x] `useStageGenerator.test.ts` を `src/hooks` から `tests` ディレクトリに移動する。
+- [x] `reducer.test.ts`と`types.test.ts`のeslint無視設定が、今回変更した`eslint.config.js`での設定変更に合っているかを確認する。
+  - 完了条件: 確認が完了し、必要な修正があれば対応されること。
+  - サブタスク:
+    - [x] `eslint.config.js` の内容を再確認する。
+    - [x] `tests/reducer.test.ts` の内容を確認し、eslint無視設定を評価する。
+    - [x] `tests/types.test.ts` の内容を確認し、eslint無視設定を評価する。
+    - [x] `tests/useStageGenerator.test.ts` の内容を確認し、eslint無視設定を評価する (該当なし)。
+- [x] `reducer.test.ts`と`types.test.ts`のeslint無視設定が、今回変更した`eslint.config.js`での設定変更に合っているかを確認する。
+- [ ] `vitest` を実行してテスト全体が通るか確認する。
+  - 完了条件: すべてのテストがパスすること。
+- [ ] `useStageGenerator.test.ts` のテスト内容を確認・修正する。
+  - 完了条件: `useStageGenerator` の変更点がテストでカバーされていることを確認し、必要であればテストを修正・追加する。
+- [x] デバッグ用に追加した `console.log` を削除する。
+  - 完了条件: `src/App.tsx` からデバッグ用の `console.log` が削除されていること。
+  - [x] lint の警告・エラーを修正する。(このタスク内で対応済み)
+- [ ] アプリケーションが正常に動作し、すべてのテストがパスすることを確認する。
+
+## 機能追加フェーズ
+
+{{ ... }}

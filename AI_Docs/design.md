@@ -183,7 +183,7 @@ while true {
 ## 7-2. React コンポーネントツリー
 
 ```
-<App>
+<App>                         // 全体の状態管理、ゲームフェーズ制御、useStageGenerator hook を利用
  ├─ <GameCanvas>                // Canvas & matter.js World
  │    ├ useMatterEngine() hook  // Engine init / step loop
  │    └ useAimGuide() hook      // 反射予測線描画
