@@ -5,6 +5,7 @@ import { useGameReducer } from './hooks/useGameReducer';
 import { useStageGenerator } from './hooks/useStageGenerator';
 import { ActionTypes, Phase } from './models/enums';
 import { Stage } from './models/types';
+import GameCanvas from './components/GameCanvas';
 
 /**
  * メインアプリケーションのコンポーネント
@@ -38,11 +39,8 @@ function App() {
         Hello Bounce Blaster
       </h1>
       <main>
-        <canvas
-          id="game-canvas"
-          data-testid="game-canvas"
-          className="h-[720px] w-[960px] border bg-zinc-800"
-        />
+        {/* GameCanvas コンポーネントに切り出し */}
+        <GameCanvas width={960} height={720} />
       </main>
     </div>
   );
