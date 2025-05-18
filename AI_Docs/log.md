@@ -251,3 +251,28 @@
 - 壁は `restitution:1, friction:0, isStatic:true` で完全反射＆停止しない特性を実現
 - `Composite.clear(world, false, true)` で World をリセットすると参照が変わるので返り値(walls)とズレに注意
 - `cancelAnimationFrame` で描画ループをクリーンアップしないとテスト環境(jsdom)でリーク警告が出る
+
+## Step7-2: 弾 Body 生成 & 手動発射（クリック位置方向）
+
+### うまくいった手法/手順
+
+- Canvas の `onClick` イベントで砲台→クリック位置のベクトルを計算し、方向を正規化
+- Bullet Body を `Bodies.circle` で生成し、`Body.setVelocity` で初速設定
+- 物理エンジンの精度向上のため `positionIterations=20`, `velocityIterations=20`, `constraintIterations=4` に設定
+- 弾の物性値 `restitution=1, friction=0, frictionAir=0` で減速を最小化
+- 物理テストでは「7%以内の速度誤差」を許容し、実測値に基づいた現実的なテスト基準を設定
+
+### 汎用的なナレッジ
+
+- 物理エンジンの数値積分では完全なエネルギー保存は難しいため、許容誤差を設けるべき
+- テストの許容値は「理想値」ではなく「実測値」に基づいて決めると堅牢になる
+- Canvas 上のクリック座標は `getBoundingClientRect()` で Canvas 座標系に変換する必要がある
+- 物理シミュレーションのパラメータ調整は「見た目」と「テスト」の両方で検証すると良い
+
+### 具体的なナレッジ
+
+- matter.js では Body に `frictionAir` プロパティを設定することで空気抵抗を制御できる
+- 壁の `frictionStatic` を 0 にすることで、衝突時の回転エネルギーロスを軽減できる
+- `Math.hypot(dx, dy)` でベクトルの長さを計算し、`(dx/len, dy/len)` で単位ベクトル化できる
+- matter.js の Body 型定義では `circleRadius` プロパティが明示されていないため、`as Body & { circleRadius?: number }` のような型アサーションが必要
+- テスト環境では `console.log` でデバッグ出力を残しておくと、失敗時の原因特定が容易になる

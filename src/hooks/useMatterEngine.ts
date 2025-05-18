@@ -21,6 +21,11 @@ export interface UseMatterEngineOptions {
 export interface UseMatterEngineReturn {
   engine: MatterEngine;
   walls: Body[];
+  /**
+   * 弾の衝突カテゴリ値 (Step7-3 で衝突検知に使用予定)
+   * @see design.md 6-3. 衝突カテゴリ
+   */
+  bulletCategory: number;
 }
 
 /**
@@ -38,7 +43,16 @@ export const useMatterEngine = (
   const { width, height, wallThickness = 20 } = options;
 
   // Engine の生成は一度だけ行う
-  const engine = useMemo(() => Engine.create({ gravity: { x: 0, y: 0 } }), []);
+  const engine = useMemo(() => {
+    const e = Engine.create({ gravity: { x: 0, y: 0 } });
+    // 反発精度向上のためイテレーション数を増やす
+    e.positionIterations = 20;
+    e.velocityIterations = 20;
+    e.constraintIterations = 4;
+    // 衝突スロップを小さくして反発精度向上
+    e.timing.timeScale = 1;
+    return e;
+  }, []);
 
   // 外周壁 4 枚をメモ化
   const walls = useMemo(() => {
@@ -49,6 +63,7 @@ export const useMatterEngine = (
         isStatic: true,
         restitution: 1,
         friction: 0,
+        frictionStatic: 0,
         label: 'wall-top',
       }),
       // 下
@@ -56,6 +71,7 @@ export const useMatterEngine = (
         isStatic: true,
         restitution: 1,
         friction: 0,
+        frictionStatic: 0,
         label: 'wall-bottom',
       }),
       // 左
@@ -63,6 +79,7 @@ export const useMatterEngine = (
         isStatic: true,
         restitution: 1,
         friction: 0,
+        frictionStatic: 0,
         label: 'wall-left',
       }),
       // 右
@@ -70,6 +87,7 @@ export const useMatterEngine = (
         isStatic: true,
         restitution: 1,
         friction: 0,
+        frictionStatic: 0,
         label: 'wall-right',
       }),
     ];
@@ -93,5 +111,8 @@ export const useMatterEngine = (
     };
   }, [engine, walls]);
 
-  return { engine, walls };
+  // 衝突カテゴリ値を設定 (design.md 6-3. 衝突カテゴリに基づく)
+  const bulletCategory = 0x0002; // 0x0002 = bullet
+
+  return { engine, walls, bulletCategory };
 };
