@@ -32,6 +32,7 @@ export const initialState: GameState = {
     solution: [],
   },
   bullet: null,
+  bounceCount: 0,
 };
 
 /**
@@ -57,6 +58,7 @@ export const gameReducer = (
         ...state,
         phase: Phase.AIMING,
         stage: action.payload?.stage || state.stage,
+        bounceCount: 0, // バウンド回数リセット
       };
 
     case ActionTypes.FIRE:
@@ -80,6 +82,15 @@ export const gameReducer = (
         ...state,
         phase: Phase.FAIL,
       };
+
+    case ActionTypes.BOUNCE: {
+      // 壁衝突ごとにバウンド回数をインクリメントし、最大バウンド超過でFAIL
+      const newCount = state.bounceCount + 1;
+      if (newCount > state.stage.maxBounce) {
+        return { ...state, bounceCount: newCount, phase: Phase.FAIL };
+      }
+      return { ...state, bounceCount: newCount };
+    }
 
     default:
       // 未知のアクションタイプの場合は現在の状態を返す

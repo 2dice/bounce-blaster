@@ -293,3 +293,32 @@
 
 - TypeScript 型定義では `IPair` ではなく `Pair`。名前空間 import (`import * as Matter from 'matter-js'`) で `Matter.Pair` を参照すると解決。
 - 弾を削除後も Engine ランナーは停止せず次の弾発射を処理できることを確認。
+
+## Step7-4　最大バウンド数ロジック実装
+
+### うまくいった手法/手順
+
+- GameStateに`bounceCount`を追加し、初期Stateで0に設定
+- ActionTypesに`BOUNCE`を追加
+- reducerで`READY`時のリセット、`BOUNCE`時のインクリメント＆超過フェイル処理を実装
+- GameCanvasでMatter.jsのcollisionStartをリスンし、壁反射時に`BOUNCE`ディスパッチ
+- フェイルフェーズ検知用useEffect追加：CONSOLE出力と弾BodyをWorldから除去
+
+### 汎用的なナレッジ
+
+- caseブロック内で定数宣言を行うとESLintに抵触するため、ブロックスコープ`{}`で囲む
+- jsdomでcanvas操作が必要な場合、`canvas`パッケージをインストールするとテストが通るが、今回は
+
+### 具体的なナレッジ
+
+- GameStateの`bounceCount`を`useEffect`で監視し、最大バウンド数を超えたらフェイルフェーズに遷移
+- `useEffect`の依存配列に`GameState.bounceCount`を追加し、バウンド数が変化したときにのみ実行
+- `CONSOLE.log`でデバッグ出力を残し、テスト環境では`console.log`を無視するように設定
+- `GameCanvas`で`collisionStart`イベントをリスンし、壁反射時に`BOUNCE`アクションをディスパッチ
+- `reducer`で`BOUNCE`アクションを処理し、バウンド数をインクリメント
+- `reducer`で最大バウンド数を超えた場合、フェイルフェーズに遷移
+- `useEffect`でフェイルフェーズを検知し、CONSOLE出力と弾BodyをWorldから除去
+- `GameCanvas`で`collisionStart`イベントをリスンし、壁反射時に`BOUNCE`アクションをディスパッチ
+- `reducer`で`BOUNCE`アクションを処理し、バウンド数をインクリメント
+- `reducer`で最大バウンド数を超えた場合、フェイルフェーズに遷移
+- `useEffect`でフェイルフェーズを検知し、CONSOLE出力と弾BodyをWorldから除去

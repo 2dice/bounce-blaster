@@ -12,7 +12,7 @@ File: AI_Docs/step.md
 # Step7-1　matter.js World 初期化 & 外周壁 (done) (StartLine=177, EndLine=203)
 # Step7-2　弾 Body 生成 & 手動発射（クリック位置方向） (done) (StartLine=204, EndLine=229)
 # Step7-3　ターゲット Body & 衝突検知コールバック (done) (StartLine=230, EndLine=257)
-# Step7-4　最大バウンド数ロジック実装 (StartLine=258, EndLine=279)
+# Step7-4　最大バウンド数ロジック実装 (done) (StartLine=258, EndLine=279)
 # Step8-1　mirrorSolve() 実装（経路計算ユーティリティ） (StartLine=280, EndLine=302)
 # Step8-2　StageGenerator 完全版（解保証 & ランダム壁） (StartLine=303, EndLine=327)
 # Step9　OverlayGenerating + ProgressBar (StartLine=328, EndLine=346)

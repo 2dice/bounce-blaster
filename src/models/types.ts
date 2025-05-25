@@ -42,4 +42,5 @@ export interface GameState {
   readonly phase: 'generating' | 'aiming' | 'firing' | 'success' | 'fail';
   readonly stage: Stage;
   readonly bullet?: Body | null;
+  readonly bounceCount: number;
 }

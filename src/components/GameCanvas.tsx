@@ -1,9 +1,17 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useMatterEngine } from '../hooks/useMatterEngine';
 import { useGameContext } from '../contexts/GameContext';
-import { ActionTypes } from '../models/enums';
+import { ActionTypes, Phase } from '../models/enums';
 // matter.js 関連
-import { Bodies, Body, Composite } from 'matter-js';
+import {
+  Bodies,
+  Body,
+  Composite,
+  Events,
+  type Engine as MatterEngine,
+  type IEventCollision,
+  type Pair,
+} from 'matter-js';
 
 interface GameCanvasProps {
   width: number;
@@ -103,6 +111,39 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
       if (animationId) cancelAnimationFrame(animationId);
     };
   }, [walls, width, height, engine, stage]);
+
+  useEffect(() => {
+    if (!engine) return;
+    const listener = (event: IEventCollision<MatterEngine>) => {
+      event.pairs.forEach((pair: Pair) => {
+        const labels = [pair.bodyA.label, pair.bodyB.label];
+        if (
+          labels.includes('bullet') &&
+          labels.some(label => label.startsWith('wall'))
+        ) {
+          dispatch({ type: ActionTypes.BOUNCE });
+        }
+      });
+    };
+    Events.on(engine, 'collisionStart', listener);
+    return () => {
+      Events.off(engine, 'collisionStart', listener);
+    };
+  }, [engine, dispatch]);
+
+  // フェイルフェーズ検知: バウンド超過時
+  useEffect(() => {
+    if (state.phase === Phase.FAIL) {
+      // eslint-disable-next-line no-console
+      console.log('fail');
+      // バレットをワールドから除去
+      engine.world.bodies.forEach(body => {
+        if (body.label === 'bullet') {
+          Composite.remove(engine.world, body, true);
+        }
+      });
+    }
+  }, [state.phase, engine]);
 
   // クリックで弾を生成して発射
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
