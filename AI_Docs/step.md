@@ -256,7 +256,7 @@
 時系列 TODO : body追加→listener→tests→commit  
 補足 : 成功後のリセットはまだ行わない
 
-# Step7-4　最大バウンド数ロジック実装
+# Step7-4　最大バウンド数ロジック実装 (done)
 
 参照(view_fileコマンド等で取得) :
 

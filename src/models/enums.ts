@@ -27,5 +27,6 @@ export enum ActionTypes {
   FIRE = 'FIRE',
   SUCCESS = 'SUCCESS',
   FAIL = 'FAIL',
+  BOUNCE = 'BOUNCE',
 }
 /* eslint-enable no-unused-vars */

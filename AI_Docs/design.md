@@ -285,13 +285,14 @@ tests/
 ├─ bulletBounce.test.ts    # バウンド検出の妥当性テスト
 ├─ bulletTargetCollision.test.ts  # 衝突検出の妥当性テスト
 ├─ reducer.test.ts         # gameReducer のフェーズ遷移テスト
+├─ reducerBounceCount.test.ts # 最大バウンド数ロジックの単体テスト
 ├─ types.test.ts           # 型定義の妥当性テスト
 ├─ useMatterEngine.test.tsx  # useMatterEngine の妥当性テスト
 ├─ useStageGenerator.test.ts  # useStageGenerator の妥当性テスト
 ├─ aimGuide.test.ts        # useAimGuide 出力の妥当性テスト
 ├─ particleEngine.test.ts  # パーティクル生成と寿命ロジックのテスト
 ├─ mirrorSolve.test.ts     # 鏡像法計算ユーティリティの単体テスト
-└─ viewport.test.ts        # calcViewport のレスポンシブ計算テスト
+├─ viewport.test.ts        # calcViewport のレスポンシブ計算テスト
 └─ setup.ts                # Vitest グローバルセットアップ
 
 .lintstagedrc               # lint-staged 設定
