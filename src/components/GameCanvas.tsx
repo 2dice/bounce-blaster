@@ -1,5 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useMatterEngine } from '../hooks/useMatterEngine';
+import { useGameContext } from '../contexts/GameContext';
+import { ActionTypes } from '../models/enums';
 // matter.js 関連
 import { Bodies, Body, Composite } from 'matter-js';
 
@@ -14,9 +16,25 @@ interface GameCanvasProps {
  */
 const GameCanvas = ({ width, height }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const targetBodyRef = useRef<Body | null>(null);
+
+  // GameContext から state と dispatch を取得
+  const { state, dispatch } = useGameContext();
+  const { stage } = state;
+
+  // 衝突時コールバック
+  const handleBulletTargetCollision = useCallback(() => {
+    dispatch({ type: ActionTypes.SUCCESS });
+    // eslint-disable-next-line no-console
+    console.log('success');
+  }, [dispatch]);
 
   // Engine & Walls を取得
-  const { engine, walls } = useMatterEngine({ width, height });
+  const { engine, walls } = useMatterEngine({
+    width,
+    height,
+    onBulletTargetCollision: handleBulletTargetCollision,
+  });
 
   // 描画ループ
   useEffect(() => {
@@ -45,6 +63,23 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         ctx.stroke();
       });
 
+      // target 描画
+      if (stage.target.x !== 0 || stage.target.y !== 0) {
+        ctx.beginPath();
+        ctx.arc(stage.target.x, stage.target.y, 18, 0, Math.PI * 2);
+        ctx.strokeStyle = '#33ff33';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+
+      // cannon 描画
+      if (stage.cannon.x !== 0 || stage.cannon.y !== 0) {
+        ctx.beginPath();
+        ctx.arc(stage.cannon.x, stage.cannon.y, 10, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+      }
+
       // bullet 描画
       engine.world.bodies.forEach(body => {
         if (body.label === 'bullet') {
@@ -67,7 +102,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     return () => {
       if (animationId) cancelAnimationFrame(animationId);
     };
-  }, [walls, width, height, engine]);
+  }, [walls, width, height, engine, stage]);
 
   // クリックで弾を生成して発射
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -78,8 +113,8 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    // 仮の砲台位置（左下の固定座標）
-    const cannon = { x: 50, y: height - 50 };
+    // 砲台位置
+    const cannon = stage.cannon;
 
     // 方向ベクトルを正規化
     const dx = clickX - cannon.x;
@@ -105,6 +140,25 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     // World へ追加
     Composite.add(engine.world, bullet);
   };
+
+  // target Body を World に追加 (一度だけ)
+  useEffect(() => {
+    if (!engine) return;
+    if (!stage || (stage.target.x === 0 && stage.target.y === 0)) return;
+
+    // 前ステージのターゲットを削除
+    if (targetBodyRef.current) {
+      Composite.remove(engine.world, targetBodyRef.current, true);
+      targetBodyRef.current = null;
+    }
+
+    const body = Bodies.circle(stage.target.x, stage.target.y, 18, {
+      isSensor: true,
+      label: 'target',
+    });
+    Composite.add(engine.world, body);
+    targetBodyRef.current = body;
+  }, [engine, stage]);
 
   return (
     <canvas
