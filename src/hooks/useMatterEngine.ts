@@ -4,9 +4,11 @@ import {
   Composite,
   Engine,
   Runner,
+  Events,
   type Body,
   type Engine as MatterEngine,
 } from 'matter-js';
+import * as Matter from 'matter-js';
 
 export interface UseMatterEngineOptions {
   width: number;
@@ -16,6 +18,10 @@ export interface UseMatterEngineOptions {
    * @default 20
    */
   wallThickness?: number;
+  /**
+   * bullet と target の衝突時に呼ばれるコールバック
+   */
+  onBulletTargetCollision?: () => void;
 }
 
 export interface UseMatterEngineReturn {
@@ -40,7 +46,12 @@ export interface UseMatterEngineReturn {
 export const useMatterEngine = (
   options: UseMatterEngineOptions,
 ): UseMatterEngineReturn => {
-  const { width, height, wallThickness = 20 } = options;
+  const {
+    width,
+    height,
+    wallThickness = 20,
+    onBulletTargetCollision,
+  } = options;
 
   // Engine の生成は一度だけ行う
   const engine = useMemo(() => {
@@ -110,6 +121,34 @@ export const useMatterEngine = (
       // World 全体をクリアすると walls 配列と参照がずれるため注意
     };
   }, [engine, walls]);
+
+  // bullet × target 衝突検知
+  useEffect(() => {
+    if (!onBulletTargetCollision) return;
+
+    const listener = (event: Matter.IEventCollision<Matter.Engine>) => {
+      // event.pairs: Array<Matter.Pair>
+      event.pairs.forEach((pair: Matter.Pair) => {
+        const { bodyA, bodyB } = pair;
+        const labels = [bodyA.label, bodyB.label];
+        if (labels.includes('bullet') && labels.includes('target')) {
+          // 成功コールバックを先に呼ぶ
+          onBulletTargetCollision();
+
+          // bullet Body を World から除去
+          const bulletBody = bodyA.label === 'bullet' ? bodyA : bodyB;
+          if (bulletBody) {
+            Composite.remove(engine.world, bulletBody, true);
+          }
+        }
+      });
+    };
+
+    Events.on(engine, 'collisionStart', listener);
+    return () => {
+      Events.off(engine, 'collisionStart', listener);
+    };
+  }, [engine, onBulletTargetCollision]);
 
   // 衝突カテゴリ値を設定 (design.md 6-3. 衝突カテゴリに基づく)
   const bulletCategory = 0x0002; // 0x0002 = bullet

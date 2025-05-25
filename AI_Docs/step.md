@@ -228,7 +228,7 @@
 時系列 TODO : onClick 実装→速度設定→tests→commit  
 補足 : まだ MaxBounce 制限なし、ターゲットなし
 
-# Step7-3　ターゲット Body & 衝突検知コールバック
+# Step7-3　ターゲット Body & 衝突検知コールバック (done)
 
 参照(view_fileコマンド等で取得) :
 
@@ -242,6 +242,7 @@
 目標 : 弾がターゲットに当たれば phase=success へ遷移  
 タスク :
 
+0. 砲台を可視化し、砲台からマウスクリックの方向に弾が発射されるように修正
 1. Target Body (sensor) を StageGenerator スタブの固定値で配置
 2. useMatterEngine に collisionStart listener 追加
 3. bullet × target で dispatch('SUCCESS')

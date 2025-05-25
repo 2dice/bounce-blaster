@@ -276,3 +276,20 @@
 - `Math.hypot(dx, dy)` でベクトルの長さを計算し、`(dx/len, dy/len)` で単位ベクトル化できる
 - matter.js の Body 型定義では `circleRadius` プロパティが明示されていないため、`as Body & { circleRadius?: number }` のような型アサーションが必要
 - テスト環境では `console.log` でデバッグ出力を残しておくと、失敗時の原因特定が容易になる
+
+## Step7-3: ターゲット衝突検知 & 弾消去
+
+### うまくいった手法/手順
+
+- `useMatterEngine` に `collisionStart` リスナーを追加し、`bullet` と `target` ラベルの組み合わせのみ検出する実装にした。
+- 成功コールバック `onBulletTargetCollision` を最優先で呼び出し、ゲームフェーズを更新してから弾 Body を `Composite.remove` で即座に World から除去した。
+
+### 汎用的なナレッジ
+
+- **Body 削除タイミング**: 衝突リスナー内で `Composite.remove` を呼んでもシミュレーションが安定して継続することを確認。`Composite.contains` は v0.20 には存在しないため不要。
+- **イベントリスナーのクリーンアップ**: `Events.on` で登録したリスナーは `useEffect` のクリーンアップで必ず `Events.off` する。
+
+### 具体的なナレッジ (ツールの使い方やハマりやすいポイントなど)
+
+- TypeScript 型定義では `IPair` ではなく `Pair`。名前空間 import (`import * as Matter from 'matter-js'`) で `Matter.Pair` を参照すると解決。
+- 弾を削除後も Engine ランナーは停止せず次の弾発射を処理できることを確認。

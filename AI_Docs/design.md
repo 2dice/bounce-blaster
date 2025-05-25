@@ -226,9 +226,13 @@ while true {
 public/
 └─ favicon.svg             # ブラウザタブに表示されるアイコン
 
+dist/                       # Vite build 出力（git に含めない）
+
 src/
+├─ App.tsx                 # ルートコンポーネント
+├─ main.tsx                # ReactDOM.createRoot → <App/> をマウント
+├─ index.css               # Tailwind の base/components/utilities インポート
 ├─ components/
-│  ├─ App.tsx              # ルートコンポーネント
 │  ├─ GameCanvas.tsx       # Canvas 要素・描画・入力をまとめる
 │  ├─ CanvasLayer.ts       # off-screen キャンバス 1 枚を管理するユーティリティ
 │  ├─ ControlBar.tsx       # 画面下部 UI コンテナ
@@ -271,34 +275,39 @@ src/
 │  ├─ calcViewport.ts      # 画面リサイズ時のキャンバスサイズ計算
 │  └─ particlePool.testRefs.ts # パーティクルプールのテスト補助関数
 │
-├─ assets/
-│  └─ sprites/
-│     ├─ spark.png         # ヒット火花スプライト
-│     └─ flash.png         # 発射フラッシュスプライト
-│
-├─ styles/
-│  └─ index.css            # Tailwind の base/components/utilities インポート
-│
-└─ index.tsx               # ReactDOM.createRoot → <App/> をマウント
+└─ assets/
+    └─ sprites/
+       ├─ spark.png         # ヒット火花スプライト
+       └─ flash.png         # 発射フラッシュスプライト
 
 tests/
-├─ mirrorSolve.test.ts     # 鏡像法計算ユーティリティの単体テスト
+├─ App.test.tsx            # ルートコンポーネントの単体テスト
+├─ bulletBounce.test.ts    # バウンド検出の妥当性テスト
+├─ bulletTargetCollision.test.ts  # 衝突検出の妥当性テスト
 ├─ reducer.test.ts         # gameReducer のフェーズ遷移テスト
+├─ types.test.ts           # 型定義の妥当性テスト
+├─ useMatterEngine.test.tsx  # useMatterEngine の妥当性テスト
+├─ useStageGenerator.test.ts  # useStageGenerator の妥当性テスト
 ├─ aimGuide.test.ts        # useAimGuide 出力の妥当性テスト
 ├─ particleEngine.test.ts  # パーティクル生成と寿命ロジックのテスト
+├─ mirrorSolve.test.ts     # 鏡像法計算ユーティリティの単体テスト
 └─ viewport.test.ts        # calcViewport のレスポンシブ計算テスト
+└─ setup.ts                # Vitest グローバルセットアップ
 
-dist/                       # Vite build 出力（git に含めない）
-
-.editorconfig               # エディタ間でインデント等を統一
-.eslintrc.cjs               # ESLint のルール定義
+.lintstagedrc               # lint-staged 設定
+.prettierignore             # prettier 除外ファイル
+.prettierrc.json            # Prettier 設定
+.eslint.config.js           # ESLint 設定
 prettier.config.cjs         # Prettier のフォーマットルール
-tailwind.config.js          # Tailwind カスタム設定
-vite.config.ts              # Vite ビルド/サーバ設定
-vitest.config.ts            # Vitest ＋ React Testing Library 設定
-tsconfig.json               # TypeScript コンパイラオプション
 package.json                # 依存パッケージおよび npm スクリプト
 pnpm-lock.yaml              # pnpm 用ロックファイル
+postcss.config.js          # PostCSS 設定
+tailwind.config.js          # Tailwind カスタム設定
+tsconfig.app.json           # React アプリケーション用 TypeScript コンパイラオプション
+tsconfig.json               # TypeScript コンパイラオプション
+tsconfig.node.json          # Node.js 用 TypeScript コンパイラオプション
+vite.config.ts              # Vite ビルド/サーバ設定
+vitest.config.ts            # Vitest ＋ React Testing Library 設定
 README.md                   # プロジェクト概要と利用手順
 CONTRIBUTING.md             # コントリビュート規約・PR ガイド
 LICENSE                     # MIT ライセンス本文
