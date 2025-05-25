@@ -145,7 +145,12 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
   useEffect(() => {
     if (!engine) return;
     if (!stage || (stage.target.x === 0 && stage.target.y === 0)) return;
-    if (targetBodyRef.current) return;
+
+    // 前ステージのターゲットを削除
+    if (targetBodyRef.current) {
+      Composite.remove(engine.world, targetBodyRef.current, true);
+      targetBodyRef.current = null;
+    }
 
     const body = Bodies.circle(stage.target.x, stage.target.y, 18, {
       isSensor: true,
