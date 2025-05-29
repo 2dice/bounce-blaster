@@ -135,31 +135,15 @@ Bullet.collidesWith = walls | target
 
 ## 6-4. ステージ生成アルゴリズム
 
-1. サイズ W,H を入力
-2. maxBounce N を取得
-3.
-
-```
-while true {
-    cannon = randPoint(margin)
-    target = randPoint(margin)
-    seq    = randomRefSeq(N)    // 例: ['R','R','T']
-    path   = mirrorSolve(cannon,target,seq,W,H)
-    if path.valid(): break       // 解が出た
-}
-```
-
-4.
-
-```
- walls = []
-    while walls.length < desiredCount {
-        r = randRect()
-        if path.intersectRect(r) == false: walls.push(r)
-    }
-```
-
-5. return Stage{…}
+1. 砲台とターゲットをランダム配置(1マス以上開ける)
+   - 配置は縦横各10等分した格子状の配置
+2. mirrorSolveのseqで渡す数を0～最大バウンド数の間でランダムに決定し、その渡す数をさらにランダムでバウンド壁指定(RLTBがランダムに最大バウンド数分セットされる)に渡す
+   - 最大バウンド数3ならseqに0～3個の値がセットされる。
+   - 3だったらTop→Bottom→Leftなどがランダムで選定されてセットされる
+   - nullならseqの個数は固定で壁の指定を再試行
+3. ブロックをランダム配置し、その経路が塞がれたら再試行
+   - ブロックの配置は縦横各10等分した格子状の配置(砲台とターゲットの位置は除く)
+   - 配置ブロック数は20個(10x10=100ブロックの20%)
 
 - mirrorSolve(): 鏡像法。外周壁のみを考慮してバウンド点列を計算。
 - バウンド点が 0≤x≤W, 0≤y≤H 内になるかチェック。
