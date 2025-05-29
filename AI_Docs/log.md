@@ -322,3 +322,18 @@
 - `reducer`で`BOUNCE`アクションを処理し、バウンド数をインクリメント
 - `reducer`で最大バウンド数を超えた場合、フェイルフェーズに遷移
 - `useEffect`でフェイルフェーズを検知し、CONSOLE出力と弾BodyをWorldから除去
+
+## Step8-1: mirrorSolve() 実装（経路計算ユーティリティ）
+
+### うまくいった手法/手順
+
+- `src/utils/geom.ts` に鏡像法で経路計算を行う `mirrorSolve` 関数を実装 😊
+- seq未指定時は総当たりで最短経路を選択
+- 無効な反射シーケンス検出と境界チェックを実装 (不可能な場合は null)
+- Vitestで `tests/mirrorSolve.test.ts` を作成し、0〜5バウンド、特定seq、エラーパターンを検証 🎉
+
+### 汎用的なナレッジ
+
+- 鏡像法により入射角=反射角を数式的に表現可能
+- 組合せ数が指数的に増えるため maxBounce 制限が重要
+- TypeScriptとVitestで null 返却ロジックを厳密にテストするとバグを防止
