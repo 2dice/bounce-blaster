@@ -13,7 +13,7 @@ File: AI_Docs/step.md
 # Step7-2　弾 Body 生成 & 手動発射（クリック位置方向） (done) (StartLine=204, EndLine=229)
 # Step7-3　ターゲット Body & 衝突検知コールバック (done) (StartLine=230, EndLine=257)
 # Step7-4　最大バウンド数ロジック実装 (done) (StartLine=258, EndLine=279)
-# Step8-1　mirrorSolve() 実装（経路計算ユーティリティ） (StartLine=280, EndLine=313)
+# Step8-1　mirrorSolve() 実装（経路計算ユーティリティ） (done) (StartLine=280, EndLine=313)
 # Step8-2　StageGenerator 完全版（解保証 & ランダム壁） (StartLine=314, EndLine=354)
 # Step9　OverlayGenerating + ProgressBar (StartLine=355, EndLine=373)
 # Step10　Next-Stage 自動遷移 & OverlayResult (StartLine=374, EndLine=393)

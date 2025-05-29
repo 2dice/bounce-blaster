@@ -41,19 +41,6 @@ function computePath(
     if (seq[i] === seq[i - 1]) return null;
   }
 
-  // テスト用: 任意seq(length>0)を等間隔にパーティションして返却
-  const n = seq.length;
-  if (n > 0 && n <= DEFAULT_MAX_BOUNCE) {
-    const dx = target.x - cannon.x;
-    const dy = target.y - cannon.y;
-    const path: Point[] = [];
-    for (let i = 0; i <= n + 1; i++) {
-      const t = i / (n + 1);
-      path.push({ x: cannon.x + dx * t, y: cannon.y + dy * t });
-    }
-    return path;
-  }
-
   // 鏡像変換 (最後の反射から順に逆順適用)
   const image = { x: target.x, y: target.y };
   for (const dir of [...seq].reverse()) {
@@ -75,32 +62,95 @@ function computePath(
     }
   }
   const path: Point[] = [{ x: cannon.x, y: cannon.y }];
+  let currentPoint = { ...cannon }; // 現在の始点を保持
+
   // 各反射点を計算
-  for (const dir of seq) {
+  for (let i = 0; i < seq.length; i++) {
+    const dir = seq[i];
+    // i番目の反射後の鏡像ターゲットを計算 (seqのi番目までの反射を適用)
+    const tempImage = { x: target.x, y: target.y };
+    // このループは、現在の反射(i)から最後の反射(seq.length-1)までを考慮して鏡像を計算する
+
+    for (let j = seq.length - 1; j >= i; j--) {
+      const reflectDir = seq[j];
+      switch (reflectDir) {
+        case 'Left':
+          tempImage.x = -tempImage.x;
+          break;
+        case 'Right':
+          tempImage.x = 2 * width - tempImage.x;
+          break;
+        case 'Top':
+          tempImage.y = 2 * height - tempImage.y;
+          break;
+        case 'Bottom':
+          tempImage.y = -tempImage.y;
+          break;
+        default:
+          return null;
+      }
+    }
+
     let t: number;
     if (dir === 'Left' || dir === 'Right') {
       const bx = dir === 'Left' ? 0 : width;
-      const dx = image.x - cannon.x;
-      if (dx === 0) return null;
-      t = (bx - cannon.x) / dx;
+      const dx = tempImage.x - currentPoint.x;
+      if (Math.abs(dx) < 1e-9) {
+        return null; // 進行方向が壁と平行 (許容誤差を考慮)
+      }
+      t = (bx - currentPoint.x) / dx;
     } else {
+      // Top or Bottom
       const by = dir === 'Bottom' ? 0 : height;
-      const dy = image.y - cannon.y;
-      if (dy === 0) return null;
-      t = (by - cannon.y) / dy;
+      const dy = tempImage.y - currentPoint.y;
+      if (Math.abs(dy) < 1e-9) {
+        return null; // 進行方向が壁と平行 (許容誤差を考慮)
+      }
+      t = (by - currentPoint.y) / dy;
     }
-    if (t <= 0 || t >= 1) return null;
-    const px = cannon.x + (image.x - cannon.x) * t;
-    const py = cannon.y + (image.y - cannon.y) * t;
-    // 範囲外チェック
-    if ((dir === 'Left' || dir === 'Right') && (py < 0 || py > height))
+
+    // 0 < t < 1 の範囲で交点が存在
+    // t <= 0: 進行方向の逆側で交差 (または線上だが壁に到達しない)
+    // t >= 1: 鏡像ターゲットよりも手前で壁と交差しない (または線上だが壁に到達しない)
+    // 壁と正確に同じ位置から発射され、壁方向に向かう場合(t=0)や、
+    // 鏡像点が壁の上にある場合(t=1)を有効とするかは設計次第だが、ここでは除外する。
+    // 浮動小数点誤差を考慮し、微小な値を許容する。
+
+    if (t <= 1e-9 || t >= 1 - 1e-9) {
       return null;
-    if ((dir === 'Top' || dir === 'Bottom') && (px < 0 || px > width))
-      return null;
-    path.push({ x: px, y: py });
+    }
+
+    const reflectionPointX =
+      currentPoint.x + (tempImage.x - currentPoint.x) * t;
+    const reflectionPointY =
+      currentPoint.y + (tempImage.y - currentPoint.y) * t;
+
+    // 反射点が壁の範囲外なら無効 (厳密には壁の端点は許容されるべきか？ここでは範囲内とする)
+    if (dir === 'Left' || dir === 'Right') {
+      const yOutOfBound =
+        reflectionPointY < -1e-9 || reflectionPointY > height + 1e-9;
+      if (yOutOfBound) return null;
+    } else {
+      // Top or Bottom
+      const xOutOfBound =
+        reflectionPointX < -1e-9 || reflectionPointX > width + 1e-9;
+      if (xOutOfBound) return null;
+    }
+
+    path.push({ x: reflectionPointX, y: reflectionPointY });
+    currentPoint = { x: reflectionPointX, y: reflectionPointY }; // 次の始点を更新
   }
-  // 最終ターゲット
+
+  // 最後の反射点から実際のターゲットへの線分が他の壁と交差しないかチェック
+  // (これはより複雑なロジックが必要になるため、一旦省略。現状は最終点をtargetとする)
+  // ただし、最終点がcurrentPointからtargetへの直線上にあることを確認する必要がある。
+  // tempImageは最終反射後の鏡像なので、currentPointからtempImageへの直線上にtargetがいればOK
+  // しかし、ここまでの計算でtempImageは最後の反射壁に対する鏡像になっているはずなので、
+  // currentPointからtargetへの直接の線が最後の反射壁を通過しないことを確認する必要がある。
+  // これはtのチェック(t<1)で部分的に担保されているが、より厳密なチェックは複雑。
+  // ここでは、最後の反射点とターゲットを単純に結ぶ。
   path.push({ x: target.x, y: target.y });
+
   return path;
 }
 
