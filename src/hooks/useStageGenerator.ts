@@ -1,16 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Stage } from '../models/types';
-
-// 固定ステージのデータ
-const STUB_STAGE_DATA: Stage = {
-  width: 960,
-  height: 720,
-  maxBounce: 3,
-  cannon: { x: 50, y: 670 },
-  target: { x: 800, y: 100 },
-  walls: [],
-  solution: [],
-};
+import { generateStage } from '../utils/stageGenerator';
 
 /**
  * ステージ生成ロジックをカプセル化するカスタムフック
@@ -20,21 +10,29 @@ const STUB_STAGE_DATA: Stage = {
  *
  * 現在は固定のステージデータを返すスタブ実装
  */
+import { GenerateStageOptions } from '../utils/stageGenerator'; // Import GenerateStageOptions
+
 export const useStageGenerator = () => {
-  const [generateStage, setGenerateStage] = useState<
-    (() => Promise<Stage>) | null
+  const [genFunc, setGenFunc] = useState<
+    ((_options?: GenerateStageOptions) => Promise<Stage>) | null
   >(null);
 
   useEffect(() => {
-    setGenerateStage(
-      () => () =>
-        new Promise<Stage>(resolve => {
-          setTimeout(() => {
-            resolve(STUB_STAGE_DATA);
-          }, 10);
+    // 一度だけ関数をセット
+    setGenFunc(
+      () => (_options?: GenerateStageOptions) =>
+        new Promise<Stage>((resolve, reject) => {
+          try {
+            // 渡された _options を generateStage に渡す
+            // _options が undefined の場合はデフォルトの {} を渡す
+            const stage = generateStage(_options ?? {});
+            resolve(stage);
+          } catch (e) {
+            reject(e as Error);
+          }
         }),
     );
   }, []);
 
-  return generateStage;
+  return genFunc;
 };
