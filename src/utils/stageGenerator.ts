@@ -121,12 +121,30 @@ export function generateStage(options: GenerateStageOptions = {}): Stage {
 
   const MAX_STAGE_GENERATION_ATTEMPTS = 2000; // ステージ生成全体のリトライ上限
 
+  let maxProgressReportedSoFar = -1;
+
+  const guardedOnProgress = (p: number) => {
+    if (onProgress) {
+      const progressValue = Math.min(100, Math.max(0, Math.floor(p)));
+      if (progressValue > maxProgressReportedSoFar) {
+        onProgress(progressValue);
+        maxProgressReportedSoFar = progressValue;
+      } else if (progressValue === 0 && maxProgressReportedSoFar === -1) {
+        onProgress(0);
+        maxProgressReportedSoFar = 0;
+      } else if (progressValue === 100 && maxProgressReportedSoFar < 100) {
+        onProgress(100);
+        maxProgressReportedSoFar = 100;
+      }
+    }
+  };
+
+  guardedOnProgress(0);
+
   for (let attempt = 0; attempt < MAX_STAGE_GENERATION_ATTEMPTS; attempt++) {
     // 各試行で元のシードを使って乱数生成器を初期化
     const currentAttemptSeed = initialSeed + attempt; // 試行ごとにseedを変える
     const rnd = rng(currentAttemptSeed); // このseedで乱数生成器を初期化
-
-    onProgress?.(0); // この試行の初期進捗
 
     try {
       // 砲台・ターゲット配置 (1マス以上離す)
@@ -140,7 +158,7 @@ export function generateStage(options: GenerateStageOptions = {}): Stage {
         Math.abs(cannon.y - target.y) < height / CELL
       );
       const progressAfterCannonTarget = 10;
-      onProgress?.(progressAfterCannonTarget);
+      guardedOnProgress(progressAfterCannonTarget);
 
       // mirrorSolve 試行
       let solution: Point[] | null = null;
@@ -154,7 +172,7 @@ export function generateStage(options: GenerateStageOptions = {}): Stage {
         const currentMirrorAttemptProgress = Math.round(
           progressAfterCannonTarget + ((i + 1) * 40) / maxMirrorTries,
         );
-        onProgress?.(currentMirrorAttemptProgress);
+        guardedOnProgress(currentMirrorAttemptProgress);
         if (currentSolution) {
           solution = currentSolution;
           progressAfterMirrorSolve = currentMirrorAttemptProgress;
@@ -198,7 +216,7 @@ export function generateStage(options: GenerateStageOptions = {}): Stage {
 
       let blocksInLoopSuccessfullyPlaced = 0;
       let randomBlockPlacementTries = 0;
-      const MAX_RANDOM_BLOCK_PLACEMENT_TRIES = BLOCK_COUNT * 20; // ランダム配置の試行上限
+      const MAX_RANDOM_BLOCK_PLACEMENT_TRIES = BLOCK_COUNT * 2000; // ランダム配置の試行上限
 
       if (numRandomBlocksToPlaceInLoop > 0) {
         while (
@@ -237,7 +255,7 @@ export function generateStage(options: GenerateStageOptions = {}): Stage {
                 progressAllocatedForRandomBlocks) /
                 numRandomBlocksToPlaceInLoop,
             );
-            onProgress?.(progressBeforeRandomBlocks + incrementalProgress);
+            guardedOnProgress(progressBeforeRandomBlocks + incrementalProgress);
           }
         }
         if (walls.length < BLOCK_COUNT) {
@@ -248,8 +266,8 @@ export function generateStage(options: GenerateStageOptions = {}): Stage {
       }
 
       // 全てのブロック配置後、確実に95%を報告
-      onProgress?.(targetProgressAfterAllBlocks);
-      onProgress?.(100); // 最終進捗
+      guardedOnProgress(targetProgressAfterAllBlocks);
+      guardedOnProgress(100); // 最終進捗
 
       return {
         width,
@@ -277,6 +295,7 @@ export function generateStage(options: GenerateStageOptions = {}): Stage {
     }
   }
   // MAX_STAGE_GENERATION_ATTEMPTS 回試行しても成功しなかった場合 (論理的に到達しないはず)
+  guardedOnProgress(100); // Report 100 to signify completion of all attempts
   throw new Error(
     `generateStage: Exhausted all attempts for initial seed ${initialSeed}. This indicates a problem in the retry logic. Please check for persistent failures with specific seed patterns.`,
   );

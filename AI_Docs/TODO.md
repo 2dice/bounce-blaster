@@ -23,4 +23,4 @@
 - [x] `tests/useStageGenerator.test.ts` の `onProgress` のアサーションエラーを修正する (完了条件: `pnpm test` で `tests/useStageGenerator.test.ts` がパスすること)
 - [x] ステージ生成の安定性とパフォーマンスを検証する (完了条件: 開発サーバーで複数回ステージを生成し、問題なく動作することを確認する)
 - [x] `AI_Docs/stageGenerator_investigation.md` に調査結果と対応方針をまとめる (完了条件: ドキュメントが最新の状態に更新されていること)
-- [x] ユーザーに最終確認を依頼する (完了条件: ユーザーが変更内容に同意すること)
+- [x] CIの `useStageGenerator.test.ts` の `onProgress` 単調増加アサーションエラーを修正する (完了条件: `pnpm test` で `tests/useStageGenerator.test.ts` がパスし、CIでも同様のエラーが再発しないこと)
