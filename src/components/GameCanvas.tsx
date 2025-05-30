@@ -25,6 +25,7 @@ interface GameCanvasProps {
 const GameCanvas = ({ width, height }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const targetBodyRef = useRef<Body | null>(null);
+  const blockBodiesRef = useRef<Body[]>([]);
 
   // GameContext から state と dispatch を取得
   const { state, dispatch } = useGameContext();
@@ -71,10 +72,32 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         ctx.stroke();
       });
 
+      // blocks 描画
+      ctx.fillStyle = '#999999';
+      stage.walls.forEach(block => {
+        ctx.fillRect(block.x, block.y, block.w, block.h);
+      });
+
+      // 目視テスト用、step12で削除
+      // solution path 描画 (黄線)
+      if (stage.solution.length > 1) {
+        ctx.strokeStyle = '#ffff00';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(stage.solution[0].x, stage.solution[0].y);
+        for (let i = 1; i < stage.solution.length; i += 1) {
+          ctx.lineTo(stage.solution[i].x, stage.solution[i].y);
+        }
+        ctx.stroke();
+      }
+
+      // walls の線色をリセット
+      ctx.strokeStyle = '#ffffff';
+
       // target 描画
       if (stage.target.x !== 0 || stage.target.y !== 0) {
         ctx.beginPath();
-        ctx.arc(stage.target.x, stage.target.y, 18, 0, Math.PI * 2);
+        ctx.arc(stage.target.x, stage.target.y, 30, 0, Math.PI * 2);
         ctx.strokeStyle = '#33ff33';
         ctx.lineWidth = 3;
         ctx.stroke();
@@ -83,7 +106,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
       // cannon 描画
       if (stage.cannon.x !== 0 || stage.cannon.y !== 0) {
         ctx.beginPath();
-        ctx.arc(stage.cannon.x, stage.cannon.y, 10, 0, Math.PI * 2);
+        ctx.arc(stage.cannon.x, stage.cannon.y, 20, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
       }
@@ -93,7 +116,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         if (body.label === 'bullet') {
           const { x, y } = body.position;
           const circleBody = body as Body & { circleRadius?: number };
-          const r = circleBody.circleRadius ?? 12;
+          const r = circleBody.circleRadius ?? 5;
           ctx.beginPath();
           ctx.arc(x, y, r, 0, Math.PI * 2);
           ctx.fillStyle = '#ff3333';
@@ -119,7 +142,9 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         const labels = [pair.bodyA.label, pair.bodyB.label];
         if (
           labels.includes('bullet') &&
-          labels.some(label => label.startsWith('wall'))
+          labels.some(
+            label => label.startsWith('wall') || label.startsWith('block'),
+          )
         ) {
           dispatch({ type: ActionTypes.BOUNCE });
         }
@@ -168,7 +193,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     const vy = (dy / len) * speed;
 
     // Bullet Body 生成
-    const bulletRadius = 12;
+    const bulletRadius = 5;
     const bullet = Bodies.circle(cannon.x, cannon.y, bulletRadius, {
       restitution: 1,
       friction: 0,
@@ -193,12 +218,40 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
       targetBodyRef.current = null;
     }
 
-    const body = Bodies.circle(stage.target.x, stage.target.y, 18, {
+    const body = Bodies.circle(stage.target.x, stage.target.y, 30, {
       isSensor: true,
       label: 'target',
     });
     Composite.add(engine.world, body);
     targetBodyRef.current = body;
+  }, [engine, stage]);
+
+  // stage.blocks を matter World に追加・更新
+  useEffect(() => {
+    if (!engine) return;
+
+    // 前ブロックを削除
+    blockBodiesRef.current.forEach(b => {
+      Composite.remove(engine.world, b, true);
+    });
+    blockBodiesRef.current = [];
+
+    stage.walls.forEach((rect, idx) => {
+      const body = Bodies.rectangle(
+        rect.x + rect.w / 2,
+        rect.y + rect.h / 2,
+        rect.w,
+        rect.h,
+        {
+          isStatic: true,
+          restitution: 1,
+          friction: 0,
+          label: `block-${idx}`,
+        },
+      );
+      Composite.add(engine.world, body);
+      blockBodiesRef.current.push(body);
+    });
   }, [engine, stage]);
 
   return (

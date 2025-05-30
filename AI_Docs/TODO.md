@@ -1,13 +1,12 @@
 # TODOリスト
 
-- [x] Step8-1: mirrorSolve() の実装
-  - [x] `src/utils/geom.ts` ファイルを作成
-  - [x] 鏡像法で反射経路を計算する `mirrorSolve` 関数を実装
-    - 引数: cannon: Point, target: Point, seq?: Direction[], width: number, height: number
-    - 返却: Point[] | null
-  - [x] 総当たりで最短経路を選ぶロジックの実装(seq未指定時)
-  - [x] 進入角=反射角の鏡像法実装
-  - [x] 無効なリフレクションシーケンスチェック(nullptr返却)
-  - [x] 境界内チェック(0<=x<=width, 0<=y<=height)
-  - [x] Vitest用の単体テスト作成: `tests/mirrorSolve.test.ts`
-  - [x] `pnpm test`がグリーンとなること確認
+## Step8-2 StageGenerator 完全版
+
+- [x] `src/utils/intersect.ts` で AABB vs Segment 交差判定ユーティリティ追加
+- [x] `src/utils/stageGenerator.ts` でランダムステージ生成実装（解保証）
+- [x] `src/hooks/useStageGenerator.ts` を stageGenerator 利用に書き換え
+- [x] 旧 useStageGenerator テストを刷新し 100 回生成テスト & 3 s 制限を追加
+- [x] `pnpm test` で全テストが pass することを確認
+- [x] `src/utils/stageGenerator.ts` の `generateStage` 関数に `onProgress` コールバックを実装
+  - 完了条件: `useStageGenerator.test.ts` で `onProgress` が適切なタイミングと値で呼び出されることを確認
+- [x] `pnpm run dev` で生成→照準フェーズに移行し Canvas に砲台/ターゲットが描画されることを目視確認
