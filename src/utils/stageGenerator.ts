@@ -7,7 +7,6 @@ export interface GenerateStageOptions {
   width?: number;
   height?: number;
   maxBounce?: 1 | 2 | 3;
-  // onProgress は省略時 unused となるため _value として定義
   onProgress?: (_value: number) => void;
 }
 
@@ -99,147 +98,186 @@ function pickBlockOnLine(
     }
   }
 
-  // 候補が無い場合は fallback: solution と交差しないランダムセル
+  // 候補が無い場合はエラーをスロー
   if (candidates.length === 0) {
-    // collect all non-intersecting cells
-    for (let cx = 0; cx < CELL; cx += 1) {
-      for (let cy = 0; cy < CELL; cy += 1) {
-        const rect = cellRect(cx, cy, cellW, cellH);
-        if (
-          wallIntersectsSolution(rect, solution) ||
-          segmentIntersectsRect(cannon, target, rect)
-        )
-          continue;
-        candidates.push(rect);
-      }
-    }
+    throw new Error(
+      'pickBlockOnLine: No suitable block found on the line between cannon and target that does not intersect the solution path.',
+    );
   }
 
-  // 最終的に候補から 1 つ選択 (必ず存在すると仮定)
+  // 最終的に候補から 1 つ選択
   const idx = Math.floor(rnd() * candidates.length);
   return candidates[idx];
 }
 
 export function generateStage(options: GenerateStageOptions = {}): Stage {
   const {
-    seed = Date.now(),
+    seed: initialSeed = Date.now(), // 元のシードを保持
     width = 960,
     height = 720,
     maxBounce = 3,
     onProgress,
   } = options;
-  const rnd = rng(seed);
 
-  onProgress?.(0); // 初期進捗
+  const MAX_STAGE_GENERATION_ATTEMPTS = 2000; // ステージ生成全体のリトライ上限
 
-  // 砲台・ターゲット配置 (1マス以上離す)
-  let cannon: Point;
-  let target: Point;
-  do {
-    cannon = randomCellCenter(rnd, width, height);
-    target = randomCellCenter(rnd, width, height);
-  } while (
-    Math.abs(cannon.x - target.x) < width / CELL ||
-    Math.abs(cannon.y - target.y) < height / CELL
-  );
-  const progressAfterCannonTarget = 10;
-  onProgress?.(progressAfterCannonTarget);
+  for (let attempt = 0; attempt < MAX_STAGE_GENERATION_ATTEMPTS; attempt++) {
+    // 各試行で元のシードを使って乱数生成器を初期化
+    const currentAttemptSeed = initialSeed + attempt; // 試行ごとにseedを変える
+    const rnd = rng(currentAttemptSeed); // このseedで乱数生成器を初期化
 
-  // mirrorSolve 試行
-  let solution: Point[] | null = null;
-  const maxMirrorTries = 40;
-  let progressAfterMirrorSolve = progressAfterCannonTarget;
+    onProgress?.(0); // この試行の初期進捗
 
-  for (let i = 0; i < maxMirrorTries; i++) {
-    const seq = randomDirectionSeq(rnd, maxBounce);
-    solution = mirrorSolve(cannon, target, seq, width, height);
-    const currentMirrorAttemptProgress = Math.round(
-      progressAfterCannonTarget + ((i + 1) * 40) / maxMirrorTries,
-    );
-    onProgress?.(currentMirrorAttemptProgress);
-    if (solution) {
-      progressAfterMirrorSolve = currentMirrorAttemptProgress;
-      break;
-    }
-  }
+    try {
+      // 砲台・ターゲット配置 (1マス以上離す)
+      let cannon: Point;
+      let target: Point;
+      do {
+        cannon = randomCellCenter(rnd, width, height);
+        target = randomCellCenter(rnd, width, height);
+      } while (
+        Math.abs(cannon.x - target.x) < width / CELL ||
+        Math.abs(cannon.y - target.y) < height / CELL
+      );
+      const progressAfterCannonTarget = 10;
+      onProgress?.(progressAfterCannonTarget);
 
-  if (!solution) {
-    // 全ての試行で解が見つからなかった場合でも、最後の進捗は報告されているはず
-    throw new Error('No solution found after maximum mirror solve tries');
-  }
+      // mirrorSolve 試行
+      let solution: Point[] | null = null;
+      const maxMirrorTries = 40; // mirrorSolve内部のリトライ上限
+      let progressAfterMirrorSolve = progressAfterCannonTarget;
+      let mirrorSolveSuccess = false;
 
-  // まず直線上のブロックを 1 つ決定
-  const mandatory = pickBlockOnLine(
-    cannon,
-    target,
-    width,
-    height,
-    solution,
-    rnd,
-  );
-
-  const walls: Rect[] = [mandatory];
-
-  const cellW = width / CELL;
-  const cellH = height / CELL;
-
-  // 残りのブロックをランダム配置 (solution と交差しない)
-  const progressBeforeRandomBlocks = progressAfterMirrorSolve;
-  const targetProgressAfterAllBlocks = 95;
-  const progressAllocatedForRandomBlocks =
-    targetProgressAfterAllBlocks - progressBeforeRandomBlocks;
-  const numRandomBlocksToPlaceInLoop = BLOCK_COUNT - 1; // mandatory が1つ配置済み
-
-  let blocksInLoopSuccessfullyPlaced = 0;
-
-  if (numRandomBlocksToPlaceInLoop > 0) {
-    while (walls.length < BLOCK_COUNT) {
-      const cx = Math.floor(rnd() * CELL);
-      const cy = Math.floor(rnd() * CELL);
-      const rect = cellRect(cx, cy, cellW, cellH);
-
-      const cannonCellX = Math.floor(cannon.x / cellW);
-      const cannonCellY = Math.floor(cannon.y / cellH);
-      const targetCellX = Math.floor(target.x / cellW);
-      const targetCellY = Math.floor(target.y / cellH);
-
-      if (
-        (cx === cannonCellX && cy === cannonCellY) || // 砲台セルを除外
-        (cx === targetCellX && cy === targetCellY) || // ターゲットセルを除外
-        wallIntersectsSolution(rect, solution) || // 解法経路と交差するものを除外
-        walls.some(
-          // 既に配置された壁と重複するものを除外
-          w => Math.abs(w.x - rect.x) < 1e-6 && Math.abs(w.y - rect.y) < 1e-6,
-        )
-      ) {
-        continue;
+      for (let i = 0; i < maxMirrorTries; i++) {
+        const seq = randomDirectionSeq(rnd, maxBounce);
+        const currentSolution = mirrorSolve(cannon, target, seq, width, height);
+        const currentMirrorAttemptProgress = Math.round(
+          progressAfterCannonTarget + ((i + 1) * 40) / maxMirrorTries,
+        );
+        onProgress?.(currentMirrorAttemptProgress);
+        if (currentSolution) {
+          solution = currentSolution;
+          progressAfterMirrorSolve = currentMirrorAttemptProgress;
+          mirrorSolveSuccess = true;
+          break;
+        }
       }
 
-      walls.push(rect);
-      blocksInLoopSuccessfullyPlaced++;
-      const incrementalProgress = Math.round(
-        (blocksInLoopSuccessfullyPlaced * progressAllocatedForRandomBlocks) /
-          numRandomBlocksToPlaceInLoop,
+      if (!mirrorSolveSuccess) {
+        throw new Error(
+          'MirrorSolveFailedThisAttempt: No solution found by mirrorSolve.',
+        );
+      }
+      if (!solution) {
+        // 論理的に到達しないはずだが、型安全のためにチェック
+        throw new Error(
+          'InternalError: Solution is null after mirrorSolve success.',
+        );
+      }
+
+      // まず直線上のブロックを 1 つ決定 (エラーを投げる可能性あり)
+      const mandatory = pickBlockOnLine(
+        cannon,
+        target,
+        width,
+        height,
+        solution,
+        rnd,
       );
-      onProgress?.(progressBeforeRandomBlocks + incrementalProgress);
+
+      const walls: Rect[] = [mandatory];
+      const cellW = width / CELL;
+      const cellH = height / CELL;
+
+      // 残りのブロックをランダム配置 (solution と交差しない)
+      const progressBeforeRandomBlocks = progressAfterMirrorSolve;
+      const targetProgressAfterAllBlocks = 95;
+      const progressAllocatedForRandomBlocks =
+        targetProgressAfterAllBlocks - progressBeforeRandomBlocks;
+      const numRandomBlocksToPlaceInLoop = BLOCK_COUNT - 1; // mandatory が1つ配置済み
+
+      let blocksInLoopSuccessfullyPlaced = 0;
+      let randomBlockPlacementTries = 0;
+      const MAX_RANDOM_BLOCK_PLACEMENT_TRIES = BLOCK_COUNT * 20; // ランダム配置の試行上限
+
+      if (numRandomBlocksToPlaceInLoop > 0) {
+        while (
+          walls.length < BLOCK_COUNT &&
+          randomBlockPlacementTries < MAX_RANDOM_BLOCK_PLACEMENT_TRIES
+        ) {
+          randomBlockPlacementTries++;
+          const cx = Math.floor(rnd() * CELL);
+          const cy = Math.floor(rnd() * CELL);
+          const rect = cellRect(cx, cy, cellW, cellH);
+
+          const cannonCellX = Math.floor(cannon.x / cellW);
+          const cannonCellY = Math.floor(cannon.y / cellH);
+          const targetCellX = Math.floor(target.x / cellW);
+          const targetCellY = Math.floor(target.y / cellH);
+
+          if (
+            (cx === cannonCellX && cy === cannonCellY) || // 砲台セルを除外
+            (cx === targetCellX && cy === targetCellY) || // ターゲットセルを除外
+            wallIntersectsSolution(rect, solution) || // 解法経路と交差するものを除外
+            walls.some(
+              // 既に配置された壁と重複するものを除外
+              w =>
+                Math.abs(w.x - rect.x) < 1e-6 && Math.abs(w.y - rect.y) < 1e-6,
+            )
+          ) {
+            continue;
+          }
+
+          walls.push(rect);
+          blocksInLoopSuccessfullyPlaced++;
+          if (numRandomBlocksToPlaceInLoop > 0) {
+            // 0除算を避ける
+            const incrementalProgress = Math.round(
+              (blocksInLoopSuccessfullyPlaced *
+                progressAllocatedForRandomBlocks) /
+                numRandomBlocksToPlaceInLoop,
+            );
+            onProgress?.(progressBeforeRandomBlocks + incrementalProgress);
+          }
+        }
+        if (walls.length < BLOCK_COUNT) {
+          throw new Error(
+            'RandomBlockPlacementFailedThisAttempt: Could not place all random blocks.',
+          );
+        }
+      }
+
+      // 全てのブロック配置後、確実に95%を報告
+      onProgress?.(targetProgressAfterAllBlocks);
+      onProgress?.(100); // 最終進捗
+
+      return {
+        width,
+        height,
+        maxBounce,
+        cannon,
+        target,
+        walls,
+        solution,
+      };
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `generateStage attempt ${attempt + 1}/${MAX_STAGE_GENERATION_ATTEMPTS} (seed ${currentAttemptSeed}) failed: ${errorMessage}. Retrying...`,
+      );
+      if (attempt === MAX_STAGE_GENERATION_ATTEMPTS - 1) {
+        // 全てのリトライ試行が失敗
+        throw new Error(
+          `generateStage: Failed to generate stage with initial seed ${initialSeed} after ${MAX_STAGE_GENERATION_ATTEMPTS} attempts (seeds ${initialSeed} to ${initialSeed + attempt}). Last error on seed ${currentAttemptSeed}: ${errorMessage}`,
+        );
+      }
+      // 次の試行へ (ループの次のイテレーション)
     }
   }
-
-  // 全てのブロック配置後、確実に95%を報告
-  onProgress?.(targetProgressAfterAllBlocks);
-
-  // 念の為ソート (現在はコメントアウト)
-  // walls.sort((a, b) => a.x - b.x || a.y - b.y);
-
-  onProgress?.(100); // 最終進捗
-
-  return {
-    width,
-    height,
-    maxBounce,
-    cannon,
-    target,
-    walls,
-    solution,
-  };
+  // MAX_STAGE_GENERATION_ATTEMPTS 回試行しても成功しなかった場合 (論理的に到達しないはず)
+  throw new Error(
+    `generateStage: Exhausted all attempts for initial seed ${initialSeed}. This indicates a problem in the retry logic. Please check for persistent failures with specific seed patterns.`,
+  );
 }

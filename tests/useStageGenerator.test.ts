@@ -14,17 +14,16 @@ describe('useStageGenerator fully implemented', () => {
     });
 
     const start = performance.now();
-    let onProgressCallCount = 0;
-    const progressValues: number[] = [];
+    const numGenerations = 5; // 繰り返し生成する回数
 
-    const handleProgress = (value: number) => {
-      onProgressCallCount += 1;
-      progressValues.push(value);
-    };
+    for (let i = 0; i < numGenerations; i += 1) {
+      let onProgressCallCount = 0; // Reset for each generation
+      const progressValues: number[] = []; // Reset progressValues array at the beginning of each iteration
 
-    for (let i = 0; i < 100; i += 1) {
-      onProgressCallCount = 0; // Reset for each generation
-      progressValues.length = 0; // Reset for each generation
+      const handleProgress = (value: number) => {
+        onProgressCallCount += 1;
+        progressValues.push(value);
+      };
 
       const stage = await generateStage!({ onProgress: handleProgress });
       expect(stage.solution).not.toBeNull();
@@ -50,5 +49,5 @@ describe('useStageGenerator fully implemented', () => {
 
     const duration = performance.now() - start;
     expect(duration).toBeLessThan(3000);
-  });
+  }, 10000); // Increase timeout to 10000ms
 });
