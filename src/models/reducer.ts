@@ -124,6 +124,17 @@ export const gameReducer = (
         error: null,
       };
 
+    case ActionTypes.NEXT_STAGE:
+      // 次のステージへ進む（成功/失敗後の自動遷移）
+      return {
+        ...state,
+        phase: Phase.GENERATING,
+        progress: 0,
+        bullet: null, // 弾をリセット
+        bounceCount: 0, // バウンド回数リセット
+        error: null, // エラー状態をクリア
+      };
+
     default:
       // 未知のアクションタイプの場合は現在の状態を返す
       return state;

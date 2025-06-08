@@ -32,5 +32,6 @@ export enum ActionTypes {
   PROGRESS_UPDATE = 'PROGRESS_UPDATE',
   ERROR = 'ERROR',
   RETRY_GENERATION = 'RETRY_GENERATION',
+  NEXT_STAGE = 'NEXT_STAGE',
 }
 /* eslint-enable no-unused-vars */

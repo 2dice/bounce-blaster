@@ -373,7 +373,7 @@
 確認方法 : 手動で `maxBounce` 変更 → オーバーレイ表示確認  
 時系列 TODO : hook変更→component→test→commit
 
-# Step10　Next-Stage 自動遷移 & OverlayResult
+# Step10　Next-Stage 自動遷移 & OverlayResult (done)
 
 参照(view_fileコマンド等で取得) :
 
@@ -406,9 +406,11 @@
 目標 : ドロップダウン変更で次ステージからバウンド数反映  
 タスク :
 
-1. <MaxBounceSelect> 実装 (1-5)
-2. onChange dispatch('SET_MAX',value)
-3. reducer で state.maxBounce 更新 → 次生成へ渡す
+1. ActionTypes に SET_MAX_BOUNCE を追加
+2. <MaxBounceSelect> 実装 (1-5 選択肢)
+3. onChange で dispatch('SET_MAX_BOUNCE', value)
+4. reducer で state.stage.maxBounce 更新
+5. <ControlBar> 実装して MaxBounceSelect 配置
 
 テスト : RTL：select change → state.maxBounce 反映  
 確認方法 : 手動：2 回クリックで 2 バウンド成功できる Stage 生成

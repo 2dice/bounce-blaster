@@ -394,3 +394,33 @@
   - `render`と`rerender`でprops変化による表示更新をテスト
 - **Arrow関数の書き方**: `arrow-body-style`警告を避けるため、単純な戻り値の場合は`() => expression`形式を使用
 - **テストのモック化**: `vi.mock`で複雑な依存コンポーネントをモック化し、テスト対象を絞り込む
+
+## Step 10: Next-Stage 自動遷移 & OverlayResult (2025/6/8)
+
+### うまくいった手法・手順
+
+- **TDDアプローチによる確実な実装**: テストファーストで OverlayResult → NEXT_STAGE アクション → 自動遷移タイマー の順で実装することで、各段階での動作保証ができた
+- **タイマー機能の段階的テスト**: jest.useFakeTimers を使った段階的テスト（999ms後→SUCCESS維持、1000ms後→GENERATING遷移）により正確な動作検証が可能
+- **UI改善の即座の反映**: ユーザーフィードバック（画面全体が色で染まる問題）を受けて即座にスタイル修正し、テストも併せて更新する迅速な対応
+- **Reducer の状態管理設計**: NEXT_STAGE アクションで bullet/bounceCount/progress/error を一括リセットすることで次ステージへの確実な初期化
+
+### 汎用的なナレッジ
+
+- **自動遷移UIの実装パターン**: SUCCESS/FAIL → タイマー設定 → クリーンアップ付きuseEffect → 次状態への遷移という流れが再利用可能
+- **オーバーレイUIの段階的デザイン**: 最初は機能実装優先、動作確認後にユーザビリティ向上のためのデザイン調整を行う段階的アプローチ
+- **テストでの時間制御**: vi.useFakeTimers + act() の組み合わせでReactの非同期状態更新を正確にテスト可能
+- **Enum拡張時のベストプラクティス**: ActionTypes 追加 → Reducer ケース追加 → テスト追加の順序で、型安全性を保ちながら機能拡張
+
+### 具体的なナレッジ
+
+- **Timer クリーンアップの重要性**: useEffect での setTimeout は必ず return () => clearTimeout(timer) でクリーンアップしないとメモリリーク発生
+- **Fake Timers のテスト技法**:
+  - `vi.useFakeTimers()` / `vi.useRealTimers()` を beforeEach/afterEach で設定
+  - `act(() => { vi.advanceTimersByTime(ms) })` でReactの状態更新を同期的にテスト
+  - タイマー境界値（999ms/1000ms）での状態確認で正確な動作検証
+- **オーバーレイスタイルの調整テクニック**:
+  - 変更前: `${bgColor} bg-opacity-90` (画面全体に色適用)
+  - 変更後: `bg-black bg-opacity-60` (背景) + `${messageColor}` (メッセージボックスのみ)
+  - テスト更新: `overlay.querySelector('div')` で内部要素の色をテスト
+- **React Testing Library でのスタイル検証**: `toHaveClass('class1', 'class2')` で複数クラスを一度に検証可能
+- **Reducer テストパターン**: 各アクションタイプごとに期待される状態変化を明示的にテスト（bullet/bounceCount/progress/error の各フィールド）
