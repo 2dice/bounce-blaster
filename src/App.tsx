@@ -8,6 +8,7 @@ import { Stage } from './models/types';
 import GameCanvas from './components/GameCanvas';
 import { OverlayGenerating } from './components/OverlayGenerating';
 import { OverlayError } from './components/OverlayError';
+import { OverlayResult } from './components/OverlayResult';
 
 /**
  * メインアプリケーションのコンポーネント
@@ -53,6 +54,17 @@ function App() {
     }
   }, [state.phase, generateStage, dispatch]);
 
+  // 成功/失敗後の自動遷移タイマー
+  useEffect(() => {
+    if (state.phase === Phase.SUCCESS || state.phase === Phase.FAIL) {
+      const timer = setTimeout(() => {
+        dispatch({ type: ActionTypes.NEXT_STAGE });
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [state.phase, dispatch]);
+
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-900 text-white">
       <h1 className="mb-8 text-center text-4xl font-bold">
@@ -75,6 +87,12 @@ function App() {
           onRetry={handleRetry}
         />
       )}
+
+      {/* 成功時のオーバーレイ */}
+      {state.phase === Phase.SUCCESS && <OverlayResult type="success" />}
+
+      {/* 失敗時のオーバーレイ */}
+      {state.phase === Phase.FAIL && <OverlayResult type="fail" />}
     </div>
   );
 }

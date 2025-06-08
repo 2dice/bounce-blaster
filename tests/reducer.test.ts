@@ -121,4 +121,41 @@ describe('gameReducer', () => {
     expect(newState.error).toBeNull();
     expect(newState.progress).toBe(0);
   });
+
+  it('NEXT_STAGE アクションで generating フェーズに戻り、ゲーム状態をリセットする', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mockBullet = {} as any;
+    const state = {
+      ...initialState,
+      phase: Phase.SUCCESS,
+      bullet: mockBullet,
+      bounceCount: 3,
+      progress: 100,
+      error: 'some error',
+    };
+    const action = { type: ActionTypes.NEXT_STAGE };
+    const newState = gameReducer(state, action);
+
+    expect(newState.phase).toBe(Phase.GENERATING);
+    expect(newState.bullet).toBeNull();
+    expect(newState.bounceCount).toBe(0);
+    expect(newState.progress).toBe(0);
+    expect(newState.error).toBeNull();
+  });
+
+  it('NEXT_STAGE アクションはFAIL状態からも正常に動作する', () => {
+    const state = {
+      ...initialState,
+      phase: Phase.FAIL,
+      bounceCount: 5,
+      progress: 100,
+    };
+    const action = { type: ActionTypes.NEXT_STAGE };
+    const newState = gameReducer(state, action);
+
+    expect(newState.phase).toBe(Phase.GENERATING);
+    expect(newState.bounceCount).toBe(0);
+    expect(newState.progress).toBe(0);
+    expect(newState.error).toBeNull();
+  });
 });
