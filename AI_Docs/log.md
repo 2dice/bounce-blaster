@@ -356,3 +356,41 @@
 ### 具体的なナレッジ
 
 - `no-use-before-define` は、関数や変数が定義される前に使用されると発生する。JavaScript/TypeScriptでは関数宣言は巻き上げられるが、ESLintのルールで警告されることがあるため、定義順を意識する。
+
+## Step9: OverlayGenerating + ProgressBar
+
+### うまくいった手法/手順
+
+- **progress状態の統合実装**:
+  - `GameState` に `progress: number` フィールドを追加
+  - `ActionTypes` に `PROGRESS_UPDATE` を追加し、reducerでprogress値を0-100でクランプ
+  - `useStageGenerator` と `stageGenerator` にprogress更新コールバック機能を追加
+- **UIコンポーネントの実装**:
+  - `ProgressBar.tsx`: 240×60px相当のプログレスバーをTailwind CSSで実装
+  - `OverlayGenerating.tsx`: 黒半透明オーバーレイ + 中央プログレスバー配置
+  - App.tsxでGeneratingフェーズ時の条件表示ロジック実装
+- **包括的テスト実装**:
+  - `tests/OverlayGenerating.test.tsx` でprogress変化、スタイル、フェーズ遷移をテスト
+  - GameCanvasをモック化してCanvas関連エラーを回避
+  - 既存の`useStageGenerator.test.ts`を修正してprogress機能に対応
+
+### 汎用的なナレッジ
+
+- **プログレス機能の段階的実装**: 状態管理→UIコンポーネント→統合→テストの順で進めることで、各段階での動作確認が容易になる
+- **Tailwind CSSでの正確なサイズ指定**: `h-15`のような未定義クラスよりも`h-16`等の定義済みクラスを使うことでlint警告を回避
+- **テストでのCanvas問題対策**: jsdom環境では`HTMLCanvasElement.getContext`が未実装のため、Canvas使用コンポーネントはモック化が必要
+- **段階的なテスト修正**: DOMセレクタが複雑な場合は、より単純で確実な要素選択方法に変更することで安定性が向上
+
+### 具体的なナレッジ
+
+- **progress状態管理のベストプラクティス**:
+  - progress値は`Math.max(0, Math.min(100, value))`でクランプして範囲外値を防ぐ
+  - useStageGeneratorでは引数名を`_onProgress`にしてlint警告(no-unused-vars)を回避
+  - stageGeneratorの`guardedOnProgress`で重複進捗報告を防止
+- **Tailwind CSSのクラス順序**: `tailwindcss/classnames-order`警告を避けるため、プロパティ順序を統一（位置→サイズ→色→その他）
+- **React Testing Libraryでのスタイルテスト**:
+  - `document.querySelector('.class1.class2')`で複合クラスを検証
+  - 複雑なDOM階層よりも確実に存在する要素での検証を優先
+  - `render`と`rerender`でprops変化による表示更新をテスト
+- **Arrow関数の書き方**: `arrow-body-style`警告を避けるため、単純な戻り値の場合は`() => expression`形式を使用
+- **テストのモック化**: `vi.mock`で複雑な依存コンポーネントをモック化し、テスト対象を絞り込む

@@ -14,6 +14,7 @@ export enum Phase {
   FIRING = 'firing',
   SUCCESS = 'success',
   FAIL = 'fail',
+  ERROR = 'error',
 }
 
 /**
@@ -28,5 +29,8 @@ export enum ActionTypes {
   SUCCESS = 'SUCCESS',
   FAIL = 'FAIL',
   BOUNCE = 'BOUNCE',
+  PROGRESS_UPDATE = 'PROGRESS_UPDATE',
+  ERROR = 'ERROR',
+  RETRY_GENERATION = 'RETRY_GENERATION',
 }
 /* eslint-enable no-unused-vars */

@@ -67,4 +67,58 @@ describe('gameReducer', () => {
     const newState = gameReducer(state, action);
     expect(newState.bullet).toBe(mockBullet);
   });
+
+  it('PROGRESS_UPDATE アクションで progress を更新し、0-100 の範囲にクランプする', () => {
+    const state = initialState;
+
+    // 正常値のテスト
+    const validAction = {
+      type: ActionTypes.PROGRESS_UPDATE,
+      payload: { progress: 50 },
+    };
+    const validState = gameReducer(state, validAction);
+    expect(validState.progress).toBe(50);
+
+    // 下限値のテスト
+    const underAction = {
+      type: ActionTypes.PROGRESS_UPDATE,
+      payload: { progress: -10 },
+    };
+    const underState = gameReducer(state, underAction);
+    expect(underState.progress).toBe(0);
+
+    // 上限値のテスト
+    const overAction = {
+      type: ActionTypes.PROGRESS_UPDATE,
+      payload: { progress: 150 },
+    };
+    const overState = gameReducer(state, overAction);
+    expect(overState.progress).toBe(100);
+  });
+
+  it('ERROR アクションで error フェーズに移行し、エラーメッセージを設定する', () => {
+    const state = { ...initialState, phase: Phase.GENERATING };
+    const errorMessage = 'ステージ生成に失敗しました';
+    const action = {
+      type: ActionTypes.ERROR,
+      payload: { error: errorMessage },
+    };
+    const newState = gameReducer(state, action);
+    expect(newState.phase).toBe(Phase.ERROR);
+    expect(newState.error).toBe(errorMessage);
+  });
+
+  it('RETRY_GENERATION アクションで generating フェーズに戻り、エラー状態をリセットする', () => {
+    const state = {
+      ...initialState,
+      phase: Phase.ERROR,
+      error: 'some error',
+      progress: 50,
+    };
+    const action = { type: ActionTypes.RETRY_GENERATION };
+    const newState = gameReducer(state, action);
+    expect(newState.phase).toBe(Phase.GENERATING);
+    expect(newState.error).toBeNull();
+    expect(newState.progress).toBe(0);
+  });
 });

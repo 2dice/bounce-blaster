@@ -15,7 +15,7 @@ File: AI_Docs/step.md
 # Step7-4　最大バウンド数ロジック実装 (done) (StartLine=258, EndLine=279)
 # Step8-1　mirrorSolve() 実装（経路計算ユーティリティ） (done) (StartLine=280, EndLine=313)
 # Step8-2　StageGenerator 完全版（解保証 & ランダム壁） (done) (StartLine=314, EndLine=355)
-# Step9　OverlayGenerating + ProgressBar (StartLine=356, EndLine=374)
+# Step9　OverlayGenerating + ProgressBar (done) (StartLine=356, EndLine=374)
 # Step10　Next-Stage 自動遷移 & OverlayResult (StartLine=375, EndLine=394)
 # Step11　ControlBar & MaxBounceSelect → StageGenerator 連携 (StartLine=395, EndLine=414)
 # Step12　AimGuide (予測反射ライン) (StartLine=415, EndLine=453)
