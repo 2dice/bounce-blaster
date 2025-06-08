@@ -37,11 +37,14 @@ describe('OverlayGenerating Progress Tests', () => {
     expect(screen.getByText('生成中... 100%')).toBeInTheDocument();
   });
 
-  it('should clamp progress values within 0-100 range', () => {
-    const { rerender } = render(<OverlayGenerating progress={-10} />);
+  it('should display progress values as provided by reducer', () => {
+    const { rerender } = render(<OverlayGenerating progress={0} />);
     expect(screen.getByText('生成中... 0%')).toBeInTheDocument();
 
-    rerender(<OverlayGenerating progress={150} />);
+    rerender(<OverlayGenerating progress={50} />);
+    expect(screen.getByText('生成中... 50%')).toBeInTheDocument();
+
+    rerender(<OverlayGenerating progress={100} />);
     expect(screen.getByText('生成中... 100%')).toBeInTheDocument();
   });
 
@@ -63,6 +66,9 @@ describe('OverlayGenerating Progress Tests', () => {
     await act(async () => {
       vi.advanceTimersByTime(5000); // 5秒進める
     });
+
+    // ステージ生成完了後、オーバーレイが消えることを確認
+    expect(screen.queryByText(/生成中... \d+%/)).toBeNull();
   });
 
   it('should show progress bar with correct styling classes', () => {

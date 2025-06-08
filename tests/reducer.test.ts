@@ -67,4 +67,32 @@ describe('gameReducer', () => {
     const newState = gameReducer(state, action);
     expect(newState.bullet).toBe(mockBullet);
   });
+
+  it('PROGRESS_UPDATE アクションで progress を更新し、0-100 の範囲にクランプする', () => {
+    const state = initialState;
+
+    // 正常値のテスト
+    const validAction = {
+      type: ActionTypes.PROGRESS_UPDATE,
+      payload: { progress: 50 },
+    };
+    const validState = gameReducer(state, validAction);
+    expect(validState.progress).toBe(50);
+
+    // 下限値のテスト
+    const underAction = {
+      type: ActionTypes.PROGRESS_UPDATE,
+      payload: { progress: -10 },
+    };
+    const underState = gameReducer(state, underAction);
+    expect(underState.progress).toBe(0);
+
+    // 上限値のテスト
+    const overAction = {
+      type: ActionTypes.PROGRESS_UPDATE,
+      payload: { progress: 150 },
+    };
+    const overState = gameReducer(state, overAction);
+    expect(overState.progress).toBe(100);
+  });
 });
