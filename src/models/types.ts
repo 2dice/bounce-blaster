@@ -39,9 +39,16 @@ export interface Stage {
  * React useReducerで使用予定
  */
 export interface GameState {
-  readonly phase: 'generating' | 'aiming' | 'firing' | 'success' | 'fail';
+  readonly phase:
+    | 'generating'
+    | 'aiming'
+    | 'firing'
+    | 'success'
+    | 'fail'
+    | 'error';
   readonly stage: Stage;
   readonly bullet?: Body | null;
   readonly bounceCount: number;
   readonly progress: number; // ステージ生成進捗 (0-100)
+  readonly error?: string | null; // エラーメッセージ
 }

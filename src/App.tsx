@@ -7,6 +7,7 @@ import { ActionTypes, Phase } from './models/enums';
 import { Stage } from './models/types';
 import GameCanvas from './components/GameCanvas';
 import { OverlayGenerating } from './components/OverlayGenerating';
+import { OverlayError } from './components/OverlayError';
 
 /**
  * メインアプリケーションのコンポーネント
@@ -14,6 +15,11 @@ import { OverlayGenerating } from './components/OverlayGenerating';
 function App() {
   const { state, dispatch } = useGameReducer();
   const generateStage = useStageGenerator();
+
+  // リトライハンドラー
+  const handleRetry = () => {
+    dispatch({ type: ActionTypes.RETRY_GENERATION });
+  };
 
   // ステージ生成処理
   useEffect(() => {
@@ -32,9 +38,14 @@ function App() {
           .then((stage: Stage) => {
             dispatch({ type: ActionTypes.READY, payload: { stage } });
           })
-          .catch((_error: Error) => {
-            // TODO: エラーハンドリングを実装する
-            // console.error('App.tsx: Error in generateStage promise:', _error);
+          .catch((error: Error) => {
+            // エラー発生時はERRORフェーズに遷移
+            dispatch({
+              type: ActionTypes.ERROR,
+              payload: {
+                error: `ステージ生成に失敗しました: ${error.message}`,
+              },
+            });
           });
       } else {
         // generateStage が falsy の場合の処理（必要であれば）
@@ -55,6 +66,14 @@ function App() {
       {/* ステージ生成中のオーバーレイ */}
       {state.phase === Phase.GENERATING && (
         <OverlayGenerating progress={state.progress} />
+      )}
+
+      {/* エラー時のオーバーレイ */}
+      {state.phase === Phase.ERROR && (
+        <OverlayError
+          error={state.error || 'unknown error'}
+          onRetry={handleRetry}
+        />
       )}
     </div>
   );

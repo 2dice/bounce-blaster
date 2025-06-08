@@ -14,6 +14,7 @@ export type GameAction = {
     stage?: Stage;
     bullet?: Body;
     progress?: number;
+    error?: string;
   };
 };
 
@@ -35,6 +36,7 @@ export const initialState: GameState = {
   bullet: null,
   bounceCount: 0,
   progress: 0,
+  error: null,
 };
 
 /**
@@ -53,6 +55,7 @@ export const gameReducer = (
         ...state,
         phase: Phase.GENERATING,
         progress: 0,
+        error: null, // エラー状態をクリア
       };
 
     case ActionTypes.READY:
@@ -63,6 +66,7 @@ export const gameReducer = (
         stage: action.payload?.stage || state.stage,
         bounceCount: 0, // バウンド回数リセット
         progress: 100, // 生成完了
+        error: null, // エラー状態をクリア
       };
 
     case ActionTypes.FIRE:
@@ -101,6 +105,23 @@ export const gameReducer = (
       return {
         ...state,
         progress: Math.max(0, Math.min(100, action.payload?.progress ?? 0)),
+      };
+
+    case ActionTypes.ERROR:
+      // エラー発生時、エラーフェーズに遷移
+      return {
+        ...state,
+        phase: Phase.ERROR,
+        error: action.payload?.error || 'ステージ生成中にエラーが発生しました',
+      };
+
+    case ActionTypes.RETRY_GENERATION:
+      // エラー状態からリトライ、生成フェーズに戻る
+      return {
+        ...state,
+        phase: Phase.GENERATING,
+        progress: 0,
+        error: null,
       };
 
     default:
