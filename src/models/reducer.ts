@@ -13,6 +13,7 @@ export type GameAction = {
   payload?: {
     stage?: Stage;
     bullet?: Body;
+    progress?: number;
   };
 };
 
@@ -33,6 +34,7 @@ export const initialState: GameState = {
   },
   bullet: null,
   bounceCount: 0,
+  progress: 0,
 };
 
 /**
@@ -50,6 +52,7 @@ export const gameReducer = (
       return {
         ...state,
         phase: Phase.GENERATING,
+        progress: 0,
       };
 
     case ActionTypes.READY:
@@ -59,6 +62,7 @@ export const gameReducer = (
         phase: Phase.AIMING,
         stage: action.payload?.stage || state.stage,
         bounceCount: 0, // バウンド回数リセット
+        progress: 100, // 生成完了
       };
 
     case ActionTypes.FIRE:
@@ -91,6 +95,13 @@ export const gameReducer = (
       }
       return { ...state, bounceCount: newCount };
     }
+
+    case ActionTypes.PROGRESS_UPDATE:
+      // ステージ生成の進捗更新
+      return {
+        ...state,
+        progress: Math.max(0, Math.min(100, action.payload?.progress ?? 0)),
+      };
 
     default:
       // 未知のアクションタイプの場合は現在の状態を返す

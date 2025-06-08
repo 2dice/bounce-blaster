@@ -28,5 +28,6 @@ export enum ActionTypes {
   SUCCESS = 'SUCCESS',
   FAIL = 'FAIL',
   BOUNCE = 'BOUNCE',
+  PROGRESS_UPDATE = 'PROGRESS_UPDATE',
 }
 /* eslint-enable no-unused-vars */

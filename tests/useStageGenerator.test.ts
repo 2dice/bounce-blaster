@@ -25,7 +25,7 @@ describe('useStageGenerator fully implemented', () => {
         progressValues.push(value);
       };
 
-      const stage = await generateStage!({ onProgress: handleProgress });
+      const stage = await generateStage!({}, handleProgress);
       expect(stage.solution).not.toBeNull();
       expect(stage.walls.length).toBeLessThanOrEqual(20);
 

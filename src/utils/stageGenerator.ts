@@ -110,13 +110,15 @@ function pickBlockOnLine(
   return candidates[idx];
 }
 
-export function generateStage(options: GenerateStageOptions = {}): Stage {
+export function generateStage(
+  options: GenerateStageOptions = {},
+  _onProgress?: (_progress: number) => void,
+): Stage {
   const {
     seed: initialSeed = Date.now(), // 元のシードを保持
     width = 960,
     height = 720,
     maxBounce = 3,
-    onProgress,
   } = options;
 
   const MAX_STAGE_GENERATION_ATTEMPTS = 2000; // ステージ生成全体のリトライ上限
@@ -124,16 +126,16 @@ export function generateStage(options: GenerateStageOptions = {}): Stage {
   let maxProgressReportedSoFar = -1;
 
   const guardedOnProgress = (p: number) => {
-    if (onProgress) {
+    if (_onProgress) {
       const progressValue = Math.min(100, Math.max(0, Math.floor(p)));
       if (progressValue > maxProgressReportedSoFar) {
-        onProgress(progressValue);
+        _onProgress(progressValue);
         maxProgressReportedSoFar = progressValue;
       } else if (progressValue === 0 && maxProgressReportedSoFar === -1) {
-        onProgress(0);
+        _onProgress(0);
         maxProgressReportedSoFar = 0;
       } else if (progressValue === 100 && maxProgressReportedSoFar < 100) {
-        onProgress(100);
+        _onProgress(100);
         maxProgressReportedSoFar = 100;
       }
     }

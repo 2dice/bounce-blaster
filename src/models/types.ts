@@ -43,4 +43,5 @@ export interface GameState {
   readonly stage: Stage;
   readonly bullet?: Body | null;
   readonly bounceCount: number;
+  readonly progress: number; // ステージ生成進捗 (0-100)
 }

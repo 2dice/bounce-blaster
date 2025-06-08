@@ -354,7 +354,7 @@
 確認方法 : テスト結果 +タイムログ確認  
 補足 : randomRect の衝突判定は AABB vs segment 関数
 
-# Step9　OverlayGenerating + ProgressBar
+# Step9　OverlayGenerating + ProgressBar (done)
 
 参照(view_fileコマンド等で取得) :
 

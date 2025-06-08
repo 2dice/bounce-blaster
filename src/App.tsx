@@ -6,6 +6,7 @@ import { useStageGenerator } from './hooks/useStageGenerator';
 import { ActionTypes, Phase } from './models/enums';
 import { Stage } from './models/types';
 import GameCanvas from './components/GameCanvas';
+import { OverlayGenerating } from './components/OverlayGenerating';
 
 /**
  * メインアプリケーションのコンポーネント
@@ -19,7 +20,15 @@ function App() {
     if (state.phase === Phase.GENERATING) {
       dispatch({ type: ActionTypes.GENERATING }); // 明示的に生成開始
       if (generateStage) {
-        generateStage()
+        // 進捗更新のコールバック関数
+        const onProgress = (progress: number) => {
+          dispatch({
+            type: ActionTypes.PROGRESS_UPDATE,
+            payload: { progress },
+          });
+        };
+
+        generateStage({}, onProgress)
           .then((stage: Stage) => {
             dispatch({ type: ActionTypes.READY, payload: { stage } });
           })
@@ -42,6 +51,11 @@ function App() {
         {/* GameCanvas コンポーネントに切り出し */}
         <GameCanvas width={960} height={720} />
       </main>
+
+      {/* ステージ生成中のオーバーレイ */}
+      {state.phase === Phase.GENERATING && (
+        <OverlayGenerating progress={state.progress} />
+      )}
     </div>
   );
 }
