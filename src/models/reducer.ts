@@ -15,6 +15,7 @@ export type GameAction = {
     bullet?: Body;
     progress?: number;
     error?: string;
+    maxBounce?: 1 | 2 | 3 | 4 | 5;
   };
 };
 
@@ -63,7 +64,9 @@ export const gameReducer = (
       return {
         ...state,
         phase: Phase.AIMING,
-        stage: action.payload?.stage || state.stage,
+        stage: action.payload?.stage
+          ? { ...action.payload.stage, maxBounce: state.stage.maxBounce }
+          : state.stage,
         bounceCount: 0, // バウンド回数リセット
         progress: 100, // 生成完了
         error: null, // エラー状態をクリア
@@ -133,6 +136,21 @@ export const gameReducer = (
         bullet: null, // 弾をリセット
         bounceCount: 0, // バウンド回数リセット
         error: null, // エラー状態をクリア
+      };
+
+    case ActionTypes.SET_MAX_BOUNCE:
+      // 最大バウンド数設定と同時にステージ再生成を開始
+      return {
+        ...state,
+        phase: Phase.GENERATING,
+        progress: 0,
+        bullet: null, // 弾をリセット
+        bounceCount: 0, // バウンド回数リセット
+        error: null, // エラー状態をクリア
+        stage: {
+          ...state.stage,
+          maxBounce: action.payload?.maxBounce || state.stage.maxBounce,
+        },
       };
 
     default:
