@@ -9,6 +9,7 @@ import GameCanvas from './components/GameCanvas';
 import { OverlayGenerating } from './components/OverlayGenerating';
 import { OverlayError } from './components/OverlayError';
 import { OverlayResult } from './components/OverlayResult';
+import { ControlBar } from './components/ControlBar';
 
 /**
  * メインアプリケーションのコンポーネント
@@ -35,7 +36,7 @@ function App() {
           });
         };
 
-        generateStage({}, onProgress)
+        generateStage({ maxBounce: state.stage.maxBounce }, onProgress)
           .then((stage: Stage) => {
             dispatch({ type: ActionTypes.READY, payload: { stage } });
           })
@@ -52,7 +53,7 @@ function App() {
         // generateStage が falsy の場合の処理（必要であれば）
       }
     }
-  }, [state.phase, generateStage, dispatch]);
+  }, [state.phase, state.stage.maxBounce, generateStage, dispatch]);
 
   // 成功/失敗後の自動遷移タイマー
   useEffect(() => {
@@ -70,7 +71,9 @@ function App() {
       <h1 className="mb-8 text-center text-4xl font-bold">
         Hello Bounce Blaster
       </h1>
-      <main>
+      <main className="flex flex-col items-center">
+        {/* コントロールバー - Canvas上部に配置 */}
+        <ControlBar />
         {/* GameCanvas コンポーネントに切り出し */}
         <GameCanvas width={960} height={720} />
       </main>

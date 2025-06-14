@@ -393,7 +393,7 @@
 テスト : Vitest：jest.useFakeTimers で 1000ms 経過後 phase == generating  
 確認方法 : 手動：成功させてオーバーレイ→自動リセット確認
 
-# Step11　ControlBar & MaxBounceSelect → StageGenerator 連携
+# Step11　ControlBar & MaxBounceSelect → StageGenerator 連携 (done)
 
 参照(view_fileコマンド等で取得) :
 
@@ -403,14 +403,15 @@
   - `7. アプリケーションアーキテクチャ`
   - `8. ディレクトリ構成`
 
-目標 : ドロップダウン変更で次ステージからバウンド数反映  
+目標 : ドロップダウン変更で即座にステージ再生成・バウンド数反映  
 タスク :
 
 1. ActionTypes に SET_MAX_BOUNCE を追加
 2. <MaxBounceSelect> 実装 (1-5 選択肢)
 3. onChange で dispatch('SET_MAX_BOUNCE', value)
-4. reducer で state.stage.maxBounce 更新
-5. <ControlBar> 実装して MaxBounceSelect 配置
+4. reducer で state.stage.maxBounce 更新 + GENERATING フェーズ遷移
+5. <ControlBar> 実装して MaxBounceSelect 配置（Canvas上部右端）
+6. READY アクションでmaxBounce設定値を保持する仕組み
 
 テスト : RTL：select change → state.maxBounce 反映  
 確認方法 : 手動：2 回クリックで 2 バウンド成功できる Stage 生成

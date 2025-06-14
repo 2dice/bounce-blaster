@@ -33,5 +33,6 @@ export enum ActionTypes {
   ERROR = 'ERROR',
   RETRY_GENERATION = 'RETRY_GENERATION',
   NEXT_STAGE = 'NEXT_STAGE',
+  SET_MAX_BOUNCE = 'SET_MAX_BOUNCE',
 }
 /* eslint-enable no-unused-vars */

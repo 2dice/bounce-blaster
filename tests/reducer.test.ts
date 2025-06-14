@@ -52,7 +52,11 @@ describe('gameReducer', () => {
       payload: { stage: mockStage },
     };
     const newState = gameReducer(state, action);
-    expect(newState.stage).toEqual(mockStage);
+    // maxBounceは元の値が保持され、他のプロパティは更新される
+    expect(newState.stage).toEqual({
+      ...mockStage,
+      maxBounce: initialState.stage.maxBounce, // 元の値(3)が保持される
+    });
   });
 
   it('payload で bullet 情報を更新する', () => {
@@ -157,5 +161,77 @@ describe('gameReducer', () => {
     expect(newState.bounceCount).toBe(0);
     expect(newState.progress).toBe(0);
     expect(newState.error).toBeNull();
+  });
+
+  it('SET_MAX_BOUNCE アクションでmaxBounce値を更新し、GENERATINGフェーズに遷移する', () => {
+    const state = {
+      ...initialState,
+      phase: Phase.AIMING,
+      stage: {
+        ...initialState.stage,
+        maxBounce: 3 as 1 | 2 | 3 | 4 | 5,
+      },
+      progress: 100,
+      bounceCount: 2,
+    };
+    const action = {
+      type: ActionTypes.SET_MAX_BOUNCE,
+      payload: { maxBounce: 2 as 1 | 2 | 3 | 4 | 5 },
+    };
+    const newState = gameReducer(state, action);
+
+    expect(newState.stage.maxBounce).toBe(2);
+    expect(newState.phase).toBe(Phase.GENERATING); // GENERATINGフェーズに遷移
+    expect(newState.progress).toBe(0); // 進捗リセット
+    expect(newState.bounceCount).toBe(0); // バウンド回数リセット
+    expect(newState.bullet).toBeNull(); // 弾をリセット
+    expect(newState.error).toBeNull(); // エラー状態をクリア
+  });
+
+  it('SET_MAX_BOUNCE アクションでpayloadがない場合は現在の値を保持し、GENERATINGフェーズに遷移する', () => {
+    const state = {
+      ...initialState,
+      phase: Phase.AIMING,
+      stage: {
+        ...initialState.stage,
+        maxBounce: 4 as 1 | 2 | 3 | 4 | 5,
+      },
+    };
+    const action = {
+      type: ActionTypes.SET_MAX_BOUNCE,
+      payload: {},
+    };
+    const newState = gameReducer(state, action);
+
+    expect(newState.stage.maxBounce).toBe(4);
+    expect(newState.phase).toBe(Phase.GENERATING); // GENERATINGフェーズに遷移
+  });
+
+  it('READY アクションで新しいステージを受け取る際にmaxBounceを保持する', () => {
+    const state = {
+      ...initialState,
+      stage: {
+        ...initialState.stage,
+        maxBounce: 2 as 1 | 2 | 3 | 4 | 5,
+      },
+    };
+    const newStage = {
+      width: 800,
+      height: 600,
+      maxBounce: 5 as 1 | 2 | 3 | 4 | 5, // 新しいステージではmaxBounce=5だが、現在の設定値2が保持されるべき
+      cannon: { x: 100, y: 100 },
+      target: { x: 700, y: 100 },
+      walls: [],
+      solution: [],
+    };
+    const action = {
+      type: ActionTypes.READY,
+      payload: { stage: newStage },
+    };
+    const newState = gameReducer(state, action);
+
+    expect(newState.stage.maxBounce).toBe(2); // 元の設定値が保持される
+    expect(newState.stage.width).toBe(800); // 他のプロパティは新しい値
+    expect(newState.phase).toBe(Phase.AIMING);
   });
 });
