@@ -533,3 +533,37 @@
   - クリーンアップの優先度を明確にすることで意図しない動作を防止
 - **デバッグログの活用**: エフェクト生成時のパーティクル数ログにより、コールバック実行とエフェクト生成の確認が可能
 - **色の使い分け**: 白い砲台に対して赤色（#ff0000）エフェクトで明確なコントラスト、黄色（#ffff00）火花で爆発感を演出
+
+## Step14: DebugPanel & FPS Counter
+
+### うまくいった手法/手順
+
+- **段階的な機能実装アプローチ**:
+  1. FPSメーター単体実装 → GameStateへのデバッグ状態追加 → UI統合 → 環境フラグ設定
+  2. 各機能の独立テスト作成で確実な動作保証
+- **環境分離設計**: `__DEV__`フラグでDEV環境のみ表示、プロダクションビルドでは自動tree-shake
+- **型安全なステージシード管理**: Stage型にseedフィールド追加し、generateStage関数で確実にseed値を保存
+- **Vite設定の段階的修正**: process.env問題 → defineConfig関数形式への変更で環境変数アクセス問題を解決
+
+### 汎用的なナレッジ
+
+- **デバッグツールの設計原則**: 本体機能に影響せず、開発時のみ表示し、プロダクション環境では完全除去される仕組み
+- **FPS計測の標準パターン**: requestAnimationFrame + 1秒間隔でのフレームカウント平均化による安定した計測
+- **React Context + useReducer パターンでの状態拡張**: 既存の状態管理に新機能（グリッド表示）を追加する際の最小影響実装
+- **36進数表示の利点**: 大きな数値（タイムスタンプ）を短く読みやすい文字列で表現（デバッグ時のシード値共有に有効）
+
+### 具体的なナレッジ
+
+- **Vite環境変数とTypeScript対応**:
+  - `defineConfig(({ mode }) => ({ define: { __DEV__: JSON.stringify(mode === 'development') } }))`
+  - `declare const __DEV__: boolean;` をvite-env.d.tsに追加
+- **Canvas上でのグリッド描画技法**:
+  - セルサイズ計算: `CELL_SIZE = width / GRID_COUNT`（960px ÷ 10 = 96px）
+  - `ctx.strokeStyle = '#444444'` + `ctx.lineWidth = 1` で目立ちすぎない補助線
+- **useFpsMeter hookの実装パターン**:
+  - `performance.now()` での高精度タイムスタンプ
+  - `frameCountRef` + `lastTimeRef` でのフレーム数カウント
+  - 1秒間隔での平均FPS計算とsetState更新
+- **React useEffectの依存配列管理**: Canvas描画ループでstate.showGridの依存関係を明示的に追加してESLint警告解消
+- **テスト環境でのDEVフラグ対応**: vitest.config.tsのdefineセクションで`__DEV__: true`設定によりテスト実行時エラー回避
+- **DebugPanelのUI設計**: 固定位置（right-2 top-2）+ 半透明背景 + 最小幅設定で開発時の視認性と操作性を確保

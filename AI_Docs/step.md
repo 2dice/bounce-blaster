@@ -492,7 +492,7 @@ drag hook→aimGuide calc→canvas draw→phase 切替→tests→commit
 時系列 TODO : particle class→asset copy→render update→tests→commit  
 補足 : matter.js Body ではなく描画のみのゴーストなのでパフォーマンスに大きく響かない。
 
-# Step14　DebugPanel & FPS Counter
+# Step14　DebugPanel & FPS Counter (done)
 
 参照 :
 

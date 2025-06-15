@@ -10,6 +10,7 @@ import { OverlayGenerating } from './components/OverlayGenerating';
 import { OverlayError } from './components/OverlayError';
 import { OverlayResult } from './components/OverlayResult';
 import { MaxBounceSelect } from './components/MaxBounceSelect';
+import { DebugPanel } from './components/DebugPanel';
 
 /**
  * メインアプリケーションのコンポーネント
@@ -21,6 +22,11 @@ function App() {
   // リトライハンドラー
   const handleRetry = () => {
     dispatch({ type: ActionTypes.RETRY_GENERATION });
+  };
+
+  // グリッド表示切り替えハンドラー
+  const handleToggleGrid = () => {
+    dispatch({ type: ActionTypes.TOGGLE_GRID });
   };
 
   // ステージ生成処理
@@ -96,6 +102,15 @@ function App() {
 
       {/* 失敗時のオーバーレイ */}
       {state.phase === Phase.FAIL && <OverlayResult type="fail" />}
+
+      {/* デバッグパネル（DEV環境のみ） */}
+      {__DEV__ && (
+        <DebugPanel
+          seed={state.stage.seed?.toString(36) || '0'}
+          showGrid={state.showGrid}
+          onToggleGrid={handleToggleGrid}
+        />
+      )}
     </div>
   );
 }

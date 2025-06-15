@@ -33,11 +33,13 @@ export const initialState: GameState = {
     target: { x: 0, y: 0 },
     walls: [],
     solution: [],
+    seed: 0,
   },
   bullet: null,
   bounceCount: 0,
   progress: 0,
   error: null,
+  showGrid: false,
 };
 
 /**
@@ -151,6 +153,13 @@ export const gameReducer = (
           ...state.stage,
           maxBounce: action.payload?.maxBounce || state.stage.maxBounce,
         },
+      };
+
+    case ActionTypes.TOGGLE_GRID:
+      // デバッグ用グリッド表示切り替え
+      return {
+        ...state,
+        showGrid: !state.showGrid,
       };
 
     default:

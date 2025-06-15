@@ -279,6 +279,7 @@ export function generateStage(
         target,
         walls,
         solution,
+        seed: currentAttemptSeed,
       };
     } catch (error) {
       const errorMessage =
