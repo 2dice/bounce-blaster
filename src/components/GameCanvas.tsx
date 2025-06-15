@@ -193,6 +193,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
 
       // グリッド描画（デバッグ用）
       if (state.showGrid) {
+        ctx.save(); // Canvas状態を保存
         const GRID_COUNT = 10;
         const CELL_SIZE = width / GRID_COUNT;
         ctx.strokeStyle = '#444444';
@@ -213,6 +214,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
           ctx.lineTo(width, y);
           ctx.stroke();
         }
+        ctx.restore(); // Canvas状態を復元
       }
 
       walls.forEach(wall => {
