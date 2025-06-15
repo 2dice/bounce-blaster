@@ -6,7 +6,7 @@ export interface GenerateStageOptions {
   seed?: number;
   width?: number;
   height?: number;
-  maxBounce?: 1 | 2 | 3;
+  maxBounce?: 1 | 2 | 3 | 4 | 5;
   onProgress?: (_value: number) => void;
 }
 
