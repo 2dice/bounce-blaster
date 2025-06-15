@@ -21,7 +21,7 @@ File: AI_Docs/step.md
 # Step12　AimGuide (予測反射ライン) (done) (StartLine=418, EndLine=460)
 # Step13　視覚エフェクト（フラッシュ・トレイル・火花）(done) (StartLine=461, EndLine=493)
 # Step14　DebugPanel & FPS Counter (done) (StartLine=494, EndLine=518)
-# Step15　レスポンシブ対応 & リサイズハンドリング (StartLine=519, EndLine=543)
+# Step15　レスポンシブ対応 & リサイズハンドリング (done) (StartLine=519, EndLine=543)
 # Step16　パフォーマンス & GC リークチェック (StartLine=544, EndLine=563)
 # Step17　README / Contributing / ライセンス整備 (StartLine=564, EndLine=579)
 # Step18　最終 QA & リリースタグ v1.0.0 (StartLine=580, EndLine=599)

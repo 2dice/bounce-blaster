@@ -45,7 +45,7 @@ describe('OverlayResult', () => {
     const overlay = screen.getByRole('dialog');
 
     // 画面全体を覆うスタイル
-    expect(overlay).toHaveClass('fixed', 'inset-0', 'z-50');
+    expect(overlay).toHaveClass('absolute', 'inset-0', 'z-50');
 
     // 半透明黒背景
     expect(overlay).toHaveClass('bg-black', 'bg-opacity-60');

@@ -73,44 +73,49 @@ function App() {
   }, [state.phase, dispatch]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center bg-gray-900 text-white">
-      <main className="flex flex-col items-center">
+    <div className="flex min-h-screen w-full bg-black text-white">
+      {/* レスポンシブコンテナ - 中央寄せ、最大幅制限、黒帯背景 */}
+      <div className="container relative mx-auto flex max-w-none flex-col bg-gray-900">
         {/* コントロールバー - タイトルとMax Bounceを含む */}
-        <div className="flex h-12 w-full max-w-[960px] items-center justify-between border-b border-gray-700 bg-gray-800 px-4">
+        <div className="flex h-12 w-full items-center justify-between border-b border-gray-700 bg-gray-800 px-4">
           <h1 className="text-2xl font-bold">Bounce Blaster</h1>
           <MaxBounceSelect />
         </div>
-        {/* GameCanvas コンポーネントに切り出し */}
-        <GameCanvas width={960} height={720} />
-      </main>
 
-      {/* ステージ生成中のオーバーレイ */}
-      {state.phase === Phase.GENERATING && (
-        <OverlayGenerating progress={state.progress} />
-      )}
+        {/* ゲームキャンバス エリア - 4:3 アスペクト比維持 */}
+        <div className="flex flex-1 items-center justify-center bg-gray-900 p-4">
+          <GameCanvas className="h-full w-full" />
+        </div>
 
-      {/* エラー時のオーバーレイ */}
-      {state.phase === Phase.ERROR && (
-        <OverlayError
-          error={state.error || 'unknown error'}
-          onRetry={handleRetry}
-        />
-      )}
+        {/* オーバーレイ群 */}
+        {/* ステージ生成中のオーバーレイ */}
+        {state.phase === Phase.GENERATING && (
+          <OverlayGenerating progress={state.progress} />
+        )}
 
-      {/* 成功時のオーバーレイ */}
-      {state.phase === Phase.SUCCESS && <OverlayResult type="success" />}
+        {/* エラー時のオーバーレイ */}
+        {state.phase === Phase.ERROR && (
+          <OverlayError
+            error={state.error || 'unknown error'}
+            onRetry={handleRetry}
+          />
+        )}
 
-      {/* 失敗時のオーバーレイ */}
-      {state.phase === Phase.FAIL && <OverlayResult type="fail" />}
+        {/* 成功時のオーバーレイ */}
+        {state.phase === Phase.SUCCESS && <OverlayResult type="success" />}
 
-      {/* デバッグパネル（DEV環境のみ） */}
-      {__DEV__ && (
-        <DebugPanel
-          seed={state.stage.seed?.toString(36) || '0'}
-          showGrid={state.showGrid}
-          onToggleGrid={handleToggleGrid}
-        />
-      )}
+        {/* 失敗時のオーバーレイ */}
+        {state.phase === Phase.FAIL && <OverlayResult type="fail" />}
+
+        {/* デバッグパネル（DEV環境のみ） */}
+        {__DEV__ && (
+          <DebugPanel
+            seed={state.stage.seed?.toString(36) || '0'}
+            showGrid={state.showGrid}
+            onToggleGrid={handleToggleGrid}
+          />
+        )}
+      </div>
     </div>
   );
 }

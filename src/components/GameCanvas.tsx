@@ -6,6 +6,8 @@ import { useDrag } from '../hooks/useDrag';
 import { useAimGuide } from '../hooks/useAimGuide';
 import { Point } from '../models/types';
 import { ParticleEngine } from '../utils/ParticleEngine';
+import { useResizeObserver } from '../hooks/useResizeObserver';
+import { calcViewport } from '../utils/calcViewport';
 // matter.js 関連
 import {
   Bodies,
@@ -18,16 +20,14 @@ import {
 } from 'matter-js';
 
 interface GameCanvasProps {
-  width: number;
-  height: number;
+  className?: string;
 }
 
 /**
  * matter.js の世界を Canvas に描画するコンポーネント
- * 現状は外周壁のみを白線で描画するシンプルな実装
+ * レスポンシブ対応で4:3アスペクト比を維持
  */
-const GameCanvas = ({ width, height }: GameCanvasProps) => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+const GameCanvas = ({ className }: GameCanvasProps) => {
   const targetBodyRef = useRef<Body | null>(null);
   const cannonBodyRef = useRef<Body | null>(null);
   const blockBodiesRef = useRef<Body[]>([]);
@@ -38,6 +38,52 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
   // GameContext から state と dispatch を取得
   const { state, dispatch } = useGameContext();
   const { stage } = state;
+
+  // レスポンシブ対応: 親コンテナのサイズを監視
+  const [containerRef, containerSize] = useResizeObserver<HTMLDivElement>();
+
+  // Canvas の実際のサイズを計算（レスポンシブ対応）
+  const { width, height } = useMemo(() => {
+    if (containerSize.width === 0 || containerSize.height === 0) {
+      // 初期値として基準サイズを使用
+      return { width: 960, height: 720 };
+    }
+    return calcViewport(containerSize.width, containerSize.height);
+  }, [containerSize]);
+
+  // matter.jsワールドサイズは常に基準サイズ（960x720）を使用
+  const worldSize = useMemo(() => ({ width: 960, height: 720 }), []);
+
+  // ワールド座標とCanvas座標のスケールファクター
+  const scaleFactor = useMemo(
+    () => ({
+      x: width / worldSize.width,
+      y: height / worldSize.height,
+    }),
+    [width, height, worldSize.width, worldSize.height],
+  );
+
+  // Canvas のレファレンス
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Canvas座標をワールド座標に変換
+  const canvasToWorld = useCallback(
+    (canvasPoint: Point): Point => ({
+      x: canvasPoint.x / scaleFactor.x,
+      y: canvasPoint.y / scaleFactor.y,
+    }),
+    [scaleFactor],
+  );
+
+  // ワールド座標をCanvas座標に変換（将来のパーティクル描画最適化用）
+  // TODO: パーティクル描画の最適化時に使用予定
+  // const worldToCanvas = useCallback(
+  //   (worldPoint: Point): Point => ({
+  //     x: worldPoint.x * scaleFactor.x,
+  //     y: worldPoint.y * scaleFactor.y,
+  //   }),
+  //   [scaleFactor],
+  // );
 
   // ドラッグ中のマウス座標を管理
   const [currentMousePos, setCurrentMousePos] = useState<Point | null>(null);
@@ -77,10 +123,10 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     dispatch({ type: ActionTypes.FAIL });
   }, [createSelfDestructionEffect, dispatch, stage.cannon]);
 
-  // Engine & Walls を取得
+  // Engine & Walls を取得（常に基準サイズを使用）
   const { engine, walls } = useMatterEngine({
-    width,
-    height,
+    width: worldSize.width,
+    height: worldSize.height,
     onBulletTargetCollision: handleBulletTargetCollision,
     onBulletCannonCollision: handleBulletCannonCollision,
   });
@@ -136,13 +182,15 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     (pos: Point) => {
       // ドラッグ開始時
       if (state.phase === Phase.AIMING) {
-        setCurrentMousePos(pos);
+        const worldPos = canvasToWorld(pos);
+        setCurrentMousePos(worldPos);
       }
     },
     (_startPos: Point, currentPos: Point) => {
       // ドラッグ中
       if (state.phase === Phase.AIMING) {
-        setCurrentMousePos(currentPos);
+        const worldPos = canvasToWorld(currentPos);
+        setCurrentMousePos(worldPos);
       }
     },
     (_startPos: Point, endPos: Point) => {
@@ -150,13 +198,14 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
       setCurrentMousePos(null);
       // 弾を発射
       if (state.phase === Phase.AIMING) {
-        handleShoot(endPos);
+        const worldPos = canvasToWorld(endPos);
+        handleShoot(worldPos);
       }
     },
   );
 
-  // fieldSize をメモ化してパフォーマンス向上
-  const fieldSize = useMemo(() => ({ width, height }), [width, height]);
+  // fieldSize をメモ化（基準サイズを使用）
+  const fieldSize = useMemo(() => worldSize, [worldSize]);
 
   // AimGuide フック
   const { aimPath } = useAimGuide(
@@ -173,7 +222,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     if (!canvas) return undefined;
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return undefined;
+    if (!ctx || typeof ctx.save !== 'function') return undefined; // テスト環境対応
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#ffffff';
@@ -191,32 +240,40 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
 
       ctx.clearRect(0, 0, width, height);
 
+      // スケール変換を適用
+      ctx.save();
+      ctx.scale(scaleFactor.x, scaleFactor.y);
+
       // グリッド描画（デバッグ用）
       if (state.showGrid) {
         ctx.save(); // Canvas状態を保存
         const GRID_COUNT = 10;
-        const CELL_SIZE = width / GRID_COUNT;
+        const CELL_WIDTH = worldSize.width / GRID_COUNT; // 96px
+        const CELL_HEIGHT = worldSize.height / GRID_COUNT; // 72px
         ctx.strokeStyle = '#444444';
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1 / scaleFactor.x; // スケールに応じて線幅調整
 
         // 縦線
-        for (let x = 0; x <= width; x += CELL_SIZE) {
+        for (let x = 0; x <= worldSize.width; x += CELL_WIDTH) {
           ctx.beginPath();
           ctx.moveTo(x, 0);
-          ctx.lineTo(x, height);
+          ctx.lineTo(x, worldSize.height);
           ctx.stroke();
         }
 
         // 横線
-        for (let y = 0; y <= height; y += CELL_SIZE) {
+        for (let y = 0; y <= worldSize.height; y += CELL_HEIGHT) {
           ctx.beginPath();
           ctx.moveTo(0, y);
-          ctx.lineTo(width, y);
+          ctx.lineTo(worldSize.width, y);
           ctx.stroke();
         }
         ctx.restore(); // Canvas状態を復元
       }
 
+      // 外周壁描画
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2 / scaleFactor.x; // スケールに応じて線幅調整
       walls.forEach(wall => {
         const { vertices } = wall;
         ctx.beginPath();
@@ -297,7 +354,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         aimPath.length > 1
       ) {
         ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2 / scaleFactor.x; // スケールに応じて線幅調整
         ctx.setLineDash([5, 5]); // 点線パターン
         ctx.beginPath();
         ctx.moveTo(aimPath[0].x, aimPath[0].y);
@@ -311,8 +368,11 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         ctx.setLineDash([]); // 点線パターンをリセット
       }
 
-      // パーティクルを描画
+      // パーティクルを描画（ワールド座標系で）
       particleEngineRef.current.render(ctx);
+
+      // スケール変換を解除
+      ctx.restore();
 
       animationId = requestAnimationFrame(draw);
     };
@@ -333,6 +393,9 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     state.showGrid,
     dragState.isDragging,
     aimPath,
+    scaleFactor,
+    worldSize.width,
+    worldSize.height,
   ]);
 
   useEffect(() => {
@@ -387,12 +450,13 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
 
     if (!engine || state.phase !== Phase.AIMING) return;
 
-    // Canvas 座標系へ変換
+    // Canvas 座標系を取得し、ワールド座標に変換
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    handleShoot({ x: clickX, y: clickY });
+    const worldPos = canvasToWorld({ x: clickX, y: clickY });
+    handleShoot(worldPos);
   };
 
   // target Body を World に追加 (一度だけ)
@@ -462,18 +526,27 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
   }, [engine, stage]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      className="h-[720px] w-[960px] border bg-zinc-800"
-      data-testid="game-canvas"
-      onClick={handleClick}
-      onPointerDown={dragHandlers.onPointerDown}
-      onPointerMove={dragHandlers.onPointerMove}
-      onPointerUp={dragHandlers.onPointerUp}
-      style={{ touchAction: 'none' }} // タッチデバイスでのスクロールを防止
-    />
+    <div
+      ref={containerRef}
+      className={`${className} flex items-center justify-center`}
+    >
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        className="border bg-zinc-800"
+        style={{
+          touchAction: 'none',
+          width: `${width}px`,
+          height: `${height}px`,
+        }}
+        data-testid="game-canvas"
+        onClick={handleClick}
+        onPointerDown={dragHandlers.onPointerDown}
+        onPointerMove={dragHandlers.onPointerMove}
+        onPointerUp={dragHandlers.onPointerUp}
+      />
+    </div>
   );
 };
 

@@ -8,7 +8,7 @@ interface OverlayErrorProps {
  * ステージ生成エラー時にエラーメッセージとリトライボタンを表示
  */
 export const OverlayError = ({ error, onRetry }: OverlayErrorProps) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+  <div className="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
     <div className="rounded border border-red-600 bg-gray-800 p-6 text-center">
       <div className="mb-4 text-red-400">
         <svg
