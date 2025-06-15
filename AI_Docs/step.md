@@ -517,7 +517,7 @@ drag hook→aimGuide calc→canvas draw→phase 切替→tests→commit
 時系列 TODO : fps hook→panel ui→vite define→tests→commit  
 補足 : グリッドは CanvasPattern 描画、dbg で aim 調整に便利。
 
-# Step15　レスポンシブ対応 & リサイズハンドリング
+# Step15　レスポンシブ対応 & リサイズハンドリング (done)
 
 参照(view_fileコマンド等で取得) :
 

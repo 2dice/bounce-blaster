@@ -34,7 +34,7 @@ describe('OverlayError', () => {
 
     // オーバーレイの背景要素を確認
     const overlayElements = document.querySelectorAll(
-      '.fixed.inset-0.bg-black.bg-opacity-70',
+      '.absolute.inset-0.bg-black.bg-opacity-70',
     );
     expect(overlayElements.length).toBeGreaterThan(0);
 

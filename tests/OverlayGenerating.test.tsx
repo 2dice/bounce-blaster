@@ -79,7 +79,7 @@ describe('OverlayGenerating Progress Tests', () => {
 
     // オーバーレイの背景要素を確認
     const overlayElements = document.querySelectorAll(
-      '.fixed.inset-0.bg-black.bg-opacity-60',
+      '.absolute.inset-0.bg-black.bg-opacity-60',
     );
     expect(overlayElements.length).toBeGreaterThan(0);
 
