@@ -567,3 +567,44 @@
 - **React useEffectの依存配列管理**: Canvas描画ループでstate.showGridの依存関係を明示的に追加してESLint警告解消
 - **テスト環境でのDEVフラグ対応**: vitest.config.tsのdefineセクションで`__DEV__: true`設定によりテスト実行時エラー回避
 - **DebugPanelのUI設計**: 固定位置（right-2 top-2）+ 半透明背景 + 最小幅設定で開発時の視認性と操作性を確保
+
+## Step15: レスポンシブ対応 & リサイズハンドリング
+
+### うまくいった手法/手順
+
+- **TDD + 漸進的修正アプローチ**:
+  1. calcViewport関数のテスト先行実装 → 基本機能実装 → useResizeObserver実装 → GameCanvas統合 → UI調整
+  2. 各段階でテスト実行によりデグレを早期発見
+- **スケール変換パターン**: matter.jsワールド座標（960x720固定）とCanvas表示座標の分離により、ゲームロジックを変更せずレスポンシブ対応
+- **オーバーレイ配置の段階的修正**: fixed → absolute変更によりゲームエリア内配置を実現
+- **グリッド精度問題の原因特定**: ユーザーフィードバックから具体的な問題（7.5分割）を特定し、CELL_WIDTH/CELL_HEIGHT分離で解決
+
+### 汎用的なナレッジ
+
+- **レスポンシブCanvas設計の基本原則**:
+  - 論理サイズ（ワールド座標）と表示サイズ（Canvas座標）の明確な分離
+  - アスペクト比維持とLetterbox対応による様々なデバイス対応
+- **useResizeObserver + calcViewport パターン**: コンテナサイズ監視 → アスペクト比計算 → Canvas動的リサイズの安定した実装手法
+- **Canvas座標変換の統一管理**: canvasToWorld/worldToCanvas関数によるマウスイベント処理の一元化
+- **テスト環境でのCanvas対応**: ctx.save/restore関数存在チェックによりテスト環境での描画ループ安全実行
+- **ビルドエラーとテストエラーの分離対応**: TypeScript未使用変数警告とVitest環境差異を個別に解決
+
+### 具体的なナレッジ
+
+- **4:3アスペクト比維持のcalcViewport実装**:
+  - 左右32px余白考慮: `availableWidth = windowWidth - 64`
+  - Letterbox対応: `Math.min(heightByWidth, widthByHeight)` で小さい方に制限
+  - 最小幅保証: `Math.max(availableWidth, 320)` でモバイル対応
+- **Canvas描画でのスケール変換技法**:
+  - `ctx.scale(scaleFactor.x, scaleFactor.y)` でワールド座標系を一括変換
+  - 線幅調整: `ctx.lineWidth = baseWidth / scaleFactor.x` でスケール対応
+  - パーティクル描画はスケール変換内で実行してワールド座標系維持
+- **useResizeObserver型安全実装**:
+  - 戻り値型: `[React.RefObject<T | null>, { width: number; height: number }]`
+  - ResizeObserver未対応ブラウザへの対応: `typeof ResizeObserver === 'undefined'` チェック
+- **グリッド描画の正確な分割**:
+  - 横線: `CELL_HEIGHT = worldSize.height / GRID_COUNT` (72px)
+  - 縦線: `CELL_WIDTH = worldSize.width / GRID_COUNT` (96px)
+  - ステージ生成アルゴリズムとの完全一致でデバッグ効率向上
+- **オーバーレイのゲームエリア内配置**: `fixed inset-0` → `absolute inset-0` でrelative親要素内でのフルスクリーン表示
+- **テスト修正パターン**: 描画ループ実行有無の条件分岐により環境差異を吸収（`mockClearRect.mock.calls.length > 0`）

@@ -19,7 +19,7 @@ export const OverlayResult = ({ type }: OverlayResultProps) => {
   return (
     <div
       role="dialog"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"
+      className="absolute inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"
     >
       <div className={`rounded-lg px-12 py-8 shadow-lg ${messageColor}`}>
         <h2 className="text-center text-4xl font-bold text-white">{message}</h2>
