@@ -24,7 +24,7 @@ function findLineRectIntersection(
   start: Point,
   direction: { x: number; y: number },
   rect: { width: number; height: number },
-): Point | null {
+): { point: Point; t: number } | null {
   const { x: sx, y: sy } = start;
   const { x: dx, y: dy } = direction;
 
@@ -79,7 +79,7 @@ function findLineRectIntersection(
   if (intersections.length === 0) return null;
 
   intersections.sort((a, b) => a.t - b.t);
-  return intersections[0].point;
+  return { point: intersections[0].point, t: intersections[0].t };
 }
 
 /**
@@ -231,12 +231,12 @@ function findNearestIntersection(
     fieldSize,
   );
   if (wallIntersection) {
-    const normal = getWallNormal(wallIntersection, fieldSize);
-    const t =
-      direction.x !== 0
-        ? (wallIntersection.x - start.x) / direction.x
-        : (wallIntersection.y - start.y) / direction.y;
-    candidates.push({ point: wallIntersection, normal, t });
+    const normal = getWallNormal(wallIntersection.point, fieldSize);
+    candidates.push({
+      point: wallIntersection.point,
+      normal,
+      t: wallIntersection.t,
+    });
   }
 
   // ブロックとの交点

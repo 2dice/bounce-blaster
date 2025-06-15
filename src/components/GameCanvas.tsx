@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback, useState, useMemo } from 'react';
 import { useMatterEngine } from '../hooks/useMatterEngine';
 import { useGameContext } from '../contexts/GameContext';
 import { ActionTypes, Phase } from '../models/enums';
@@ -113,12 +113,15 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     },
   );
 
+  // fieldSize をメモ化してパフォーマンス向上
+  const fieldSize = useMemo(() => ({ width, height }), [width, height]);
+
   // AimGuide フック
   const { aimPath } = useAimGuide(
     stage.cannon,
     currentMousePos || stage.cannon,
     stage.maxBounce,
-    { width, height },
+    fieldSize,
     stage.walls,
   );
 
