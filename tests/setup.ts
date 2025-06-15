@@ -4,7 +4,6 @@ import '@testing-library/jest-dom/vitest';
 
 // globalThis に jest プロパティの型を定義
 declare global {
-  // eslint-disable-next-line no-var
   var jest: {
     advanceTimersByTime: (_ms: number) => void;
   };
