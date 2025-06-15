@@ -5,6 +5,7 @@ import { ActionTypes, Phase } from '../models/enums';
 import { useDrag } from '../hooks/useDrag';
 import { useAimGuide } from '../hooks/useAimGuide';
 import { Point } from '../models/types';
+import { ParticleEngine } from '../utils/ParticleEngine';
 // matter.js 関連
 import {
   Bodies,
@@ -28,7 +29,11 @@ interface GameCanvasProps {
 const GameCanvas = ({ width, height }: GameCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const targetBodyRef = useRef<Body | null>(null);
+  const cannonBodyRef = useRef<Body | null>(null);
   const blockBodiesRef = useRef<Body[]>([]);
+  const particleEngineRef = useRef<ParticleEngine>(new ParticleEngine());
+  const lastFrameTimeRef = useRef<number>(0);
+  const trailCounterRef = useRef<number>(0);
 
   // GameContext から state と dispatch を取得
   const { state, dispatch } = useGameContext();
@@ -39,16 +44,45 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
 
   // 衝突時コールバック
   const handleBulletTargetCollision = useCallback(() => {
+    // ヒット時火花エフェクト生成
+    particleEngineRef.current.createSparkEffect(stage.target, 20);
     dispatch({ type: ActionTypes.SUCCESS });
-    // eslint-disable-next-line no-console
-    console.log('success');
-  }, [dispatch]);
+  }, [dispatch, stage.target]);
+
+  // 自滅用の爆発エフェクト生成
+  const createSelfDestructionEffect = useCallback((position: Point) => {
+    // 標準の火花エフェクト
+    particleEngineRef.current.createSparkEffect(position, 25);
+
+    // 追加の爆発エフェクト（大きな赤い火花）
+    for (let i = 0; i < 8; i++) {
+      const angle = (Math.PI * 2 * i) / 8;
+      const distance = 30 + Math.random() * 20;
+      const pos = {
+        x: position.x + Math.cos(angle) * distance,
+        y: position.y + Math.sin(angle) * distance,
+      };
+      particleEngineRef.current.addParticle(pos, { x: 0, y: 0 }, 'spark', {
+        color: '#ff0000',
+        radius: 8,
+        alpha: 1.0,
+        lifespan: 1.0,
+      });
+    }
+  }, []);
+
+  // 自滅判定コールバック
+  const handleBulletCannonCollision = useCallback(() => {
+    createSelfDestructionEffect(stage.cannon);
+    dispatch({ type: ActionTypes.FAIL });
+  }, [createSelfDestructionEffect, dispatch, stage.cannon]);
 
   // Engine & Walls を取得
   const { engine, walls } = useMatterEngine({
     width,
     height,
     onBulletTargetCollision: handleBulletTargetCollision,
+    onBulletCannonCollision: handleBulletCannonCollision,
   });
 
   // 弾の発射処理
@@ -65,13 +99,18 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
       const len = Math.hypot(dx, dy);
       if (len === 0) return;
 
-      const speed = 10; // 発射初速(px/step)。暫定値
+      const speed = 15; // 発射初速(px/step)。暫定値
       const vx = (dx / len) * speed;
       const vy = (dy / len) * speed;
 
-      // Bullet Body 生成
+      // Bullet Body 生成 - 砲台の外側から発射
       const bulletRadius = 5;
-      const bullet = Bodies.circle(cannon.x, cannon.y, bulletRadius, {
+      const cannonRadius = 20;
+      const launchDistance = cannonRadius + bulletRadius + 2; // 砲台半径 + 弾半径 + 余裕
+      const launchX = cannon.x + (dx / len) * launchDistance;
+      const launchY = cannon.y + (dy / len) * launchDistance;
+
+      const bullet = Bodies.circle(launchX, launchY, bulletRadius, {
         restitution: 1,
         friction: 0,
         frictionAir: 0,
@@ -82,6 +121,9 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
 
       // World へ追加
       Composite.add(engine.world, bullet);
+
+      // 発射時フラッシュエフェクト生成
+      particleEngineRef.current.createFlashEffect(stage.cannon);
 
       // フェーズを発射中に変更
       dispatch({ type: ActionTypes.FIRE });
@@ -138,7 +180,15 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
 
     let animationId: number;
 
-    const draw = () => {
+    const draw = (currentTime: number) => {
+      // パーティクルシステムの更新
+      const deltaTime = lastFrameTimeRef.current
+        ? (currentTime - lastFrameTimeRef.current) / 1000
+        : 0;
+      lastFrameTimeRef.current = currentTime;
+
+      particleEngineRef.current.update(deltaTime);
+
       ctx.clearRect(0, 0, width, height);
 
       walls.forEach(wall => {
@@ -160,6 +210,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
 
       // 目視テスト用、step12で削除
       // solution path 描画 (黄線)
+      /*
       if (stage.solution.length > 1) {
         ctx.strokeStyle = '#ffff00';
         ctx.lineWidth = 2;
@@ -170,9 +221,10 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         }
         ctx.stroke();
       }
-
+      
       // walls の線色をリセット
       ctx.strokeStyle = '#ffffff';
+      */
 
       // target 描画
       if (stage.target.x !== 0 || stage.target.y !== 0) {
@@ -191,12 +243,20 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         ctx.fill();
       }
 
-      // bullet 描画
+      // bullet 描画 & トレイルエフェクト生成
       engine.world.bodies.forEach(body => {
         if (body.label === 'bullet') {
           const { x, y } = body.position;
           const circleBody = body as Body & { circleRadius?: number };
           const r = circleBody.circleRadius ?? 5;
+
+          // 5フレームごとにトレイルエフェクト生成
+          trailCounterRef.current += 1;
+          if (trailCounterRef.current >= 5) {
+            particleEngineRef.current.createTrailEffect({ x, y });
+            trailCounterRef.current = 0;
+          }
+
           ctx.beginPath();
           ctx.arc(x, y, r, 0, Math.PI * 2);
           ctx.fillStyle = '#ff3333';
@@ -215,17 +275,23 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         ctx.setLineDash([5, 5]); // 点線パターン
         ctx.beginPath();
         ctx.moveTo(aimPath[0].x, aimPath[0].y);
-        for (let i = 1; i < aimPath.length; i += 1) {
+        //MaxBounce分のバウンド数を描画
+        //for (let i = 1; i < aimPath.length; i += 1) {
+        //点線の最大バウンド数を指定(1バウンドまで)
+        for (let i = 1; i < 3; i += 1) {
           ctx.lineTo(aimPath[i].x, aimPath[i].y);
         }
         ctx.stroke();
         ctx.setLineDash([]); // 点線パターンをリセット
       }
 
+      // パーティクルを描画
+      particleEngineRef.current.render(ctx);
+
       animationId = requestAnimationFrame(draw);
     };
 
-    draw();
+    draw(performance.now());
 
     // クリーンアップ: アニメーションフレームを停止
     return () => {
@@ -266,16 +332,26 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
   // フェイルフェーズ検知: バウンド超過時
   useEffect(() => {
     if (state.phase === Phase.FAIL) {
-      // eslint-disable-next-line no-console
-      console.log('fail');
       // バレットをワールドから除去
       engine.world.bodies.forEach(body => {
         if (body.label === 'bullet') {
           Composite.remove(engine.world, body, true);
         }
       });
+      // パーティクルは自滅エフェクトを表示するためクリアしない
+      // トレイルカウンターのみリセット
+      trailCounterRef.current = 0;
     }
   }, [state.phase, engine]);
+
+  // 新ステージ開始時のクリーンアップ
+  useEffect(() => {
+    if (state.phase === Phase.GENERATING) {
+      // 新しいステージ生成時にパーティクルをクリア
+      particleEngineRef.current.clear();
+      trailCounterRef.current = 0;
+    }
+  }, [state.phase]);
 
   // レガシークリックハンドラー（ドラッグ未対応時のフォールバック）
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -309,6 +385,25 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     });
     Composite.add(engine.world, body);
     targetBodyRef.current = body;
+  }, [engine, stage]);
+
+  // cannon Body を World に追加 (一度だけ)
+  useEffect(() => {
+    if (!engine) return;
+    if (!stage || (stage.cannon.x === 0 && stage.cannon.y === 0)) return;
+
+    // 前ステージの砲台を削除
+    if (cannonBodyRef.current) {
+      Composite.remove(engine.world, cannonBodyRef.current, true);
+      cannonBodyRef.current = null;
+    }
+
+    const body = Bodies.circle(stage.cannon.x, stage.cannon.y, 20, {
+      isSensor: true,
+      label: 'cannon',
+    });
+    Composite.add(engine.world, body);
+    cannonBodyRef.current = body;
   }, [engine, stage]);
 
   // stage.blocks を matter World に追加・更新

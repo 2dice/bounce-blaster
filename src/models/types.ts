@@ -35,6 +35,25 @@ export interface Stage {
 }
 
 /**
+ * パーティクルを表すインターフェース
+ */
+export interface Particle {
+  readonly id: string;
+  readonly position: Point;
+  readonly velocity: Point;
+  readonly color: string;
+  readonly radius: number;
+  readonly alpha: number;
+  readonly lifespan: number; // 残り寿命（秒）
+  readonly maxLifespan: number; // 最大寿命（秒）
+}
+
+/**
+ * パーティクルエフェクトの種類
+ */
+export type ParticleType = 'flash' | 'trail' | 'spark';
+
+/**
  * ゲーム全体の状態を表すインターフェース
  * React useReducerで使用予定
  */

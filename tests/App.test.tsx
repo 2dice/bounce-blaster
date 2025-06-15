@@ -37,8 +37,8 @@ describe('App', () => {
     // Appコンポーネントをレンダリング
     render(<App />);
 
-    // 「Hello Bounce Blaster」というテキストが含まれるか確認
-    const titleElement = screen.getByText(/Hello Bounce Blaster/i);
+    // 「Bounce Blaster」というテキストが含まれるか確認
+    const titleElement = screen.getByText(/Bounce Blaster/i);
 
     // テキストが存在するか確認
     expect(titleElement).toBeInTheDocument();

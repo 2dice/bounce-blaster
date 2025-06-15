@@ -9,7 +9,7 @@ import GameCanvas from './components/GameCanvas';
 import { OverlayGenerating } from './components/OverlayGenerating';
 import { OverlayError } from './components/OverlayError';
 import { OverlayResult } from './components/OverlayResult';
-import { ControlBar } from './components/ControlBar';
+import { MaxBounceSelect } from './components/MaxBounceSelect';
 
 /**
  * メインアプリケーションのコンポーネント
@@ -67,13 +67,13 @@ function App() {
   }, [state.phase, dispatch]);
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center bg-gray-900 text-white">
-      <h1 className="mb-8 text-center text-4xl font-bold">
-        Hello Bounce Blaster
-      </h1>
+    <div className="flex min-h-screen w-full flex-col items-center bg-gray-900 text-white">
       <main className="flex flex-col items-center">
-        {/* コントロールバー - Canvas上部に配置 */}
-        <ControlBar />
+        {/* コントロールバー - タイトルとMax Bounceを含む */}
+        <div className="flex h-12 w-full max-w-[960px] items-center justify-between border-b border-gray-700 bg-gray-800 px-4">
+          <h1 className="text-2xl font-bold">Bounce Blaster</h1>
+          <MaxBounceSelect />
+        </div>
         {/* GameCanvas コンポーネントに切り出し */}
         <GameCanvas width={960} height={720} />
       </main>
