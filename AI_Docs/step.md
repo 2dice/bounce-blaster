@@ -416,7 +416,7 @@
 テスト : RTL：select change → state.maxBounce 反映  
 確認方法 : 手動：2 回クリックで 2 バウンド成功できる Stage 生成
 
-# Step12　AimGuide (予測反射ライン)
+# Step12　AimGuide (予測反射ライン) (done)
 
 参照(view_fileコマンド等で取得) :
 
@@ -426,28 +426,32 @@
   - `7. アプリケーションアーキテクチャ`
   - `8. ディレクトリ構成`
 
-目標 : ドラッグ中に「砲台→反射ライン→最終到達点」までを点線表示。最大バウンド数 N を超える部分は描かない。
+目標 : ドラッグ中に「砲台→マウス方向への反射経路」を最大バウンド数分まで点線表示。外周壁とブロック両方で反射。
 
 タスク :
 
-1. hooks/useDrag.ts を作成（pointerdown / move / up をラップ）
+1. hooks/useDrag.ts を作成（pointerdown / move / up をラップ、ポインターキャプチャ対応）
 2. hooks/useAimGuide.ts
-   - 砲台中心とマウス座標から角度を算出
-   - mirrorSolve(cannon,target,maxBounce,walls,field) で Point[] 取得
-   - Canvas overlay レイヤに点線描画
-3. GameCanvas にドラッグ開始・終了を組み込み
+   - 砲台からマウス方向への方向ベクトルを計算
+   - 外周壁・ブロックとの交点計算（物理的反射アルゴリズム）
+   - 法線ベクトルによる正確な反射計算
+   - 最大バウンド数分の経路を延長
+3. GameCanvas にドラッグ操作統合（ドラッグ終了時に発射）
 4. phase==aiming のみ描画、firing で自動クリア
+5. Canvas点線描画（setLineDash）でAimGuide表示
 
 テスト :
 
 - Vitest：
-  - 与えた砲台座標(100,100)、マウス(200,100)、max=1 ⇒ Point[] 長さ 2
-  - walls を含む場合 path が壁を貫かない
-- RTL：pointerDown→move→点線 Canvas が存在
+  - 砲台座標(100,100)、マウス(200,100)、max=1での水平方向予測線
+  - 斜め方向での反射経路と角度計算
+  - maxBounce=0での直線のみ表示
+  - ブロック存在時の反射計算
+- RTL：pointerDown→move→ドラッグ状態変化とCanvas存在確認
 
 確認方法 :  
-手動でドラッグし、壁に当たるたびに反射角が正しく変わるか視認。  
-デバッグで solutionLine(生成時保存) と AimGuide を色違いで比較し一致を確認。
+手動でドラッグし、外周壁とブロック両方で反射角が正しく変わるか視認。  
+最大バウンド数分の経路が表示され、実際の弾の軌道と一致することを確認。
 
 時系列 TODO :  
 drag hook→aimGuide calc→canvas draw→phase 切替→tests→commit

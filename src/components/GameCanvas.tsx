@@ -1,7 +1,10 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { useMatterEngine } from '../hooks/useMatterEngine';
 import { useGameContext } from '../contexts/GameContext';
 import { ActionTypes, Phase } from '../models/enums';
+import { useDrag } from '../hooks/useDrag';
+import { useAimGuide } from '../hooks/useAimGuide';
+import { Point } from '../models/types';
 // matter.js 関連
 import {
   Bodies,
@@ -31,6 +34,9 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
   const { state, dispatch } = useGameContext();
   const { stage } = state;
 
+  // ドラッグ中のマウス座標を管理
+  const [currentMousePos, setCurrentMousePos] = useState<Point | null>(null);
+
   // 衝突時コールバック
   const handleBulletTargetCollision = useCallback(() => {
     dispatch({ type: ActionTypes.SUCCESS });
@@ -44,6 +50,77 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     height,
     onBulletTargetCollision: handleBulletTargetCollision,
   });
+
+  // 弾の発射処理
+  const handleShoot = useCallback(
+    (targetPos: Point) => {
+      if (!engine) return;
+
+      // 砲台位置
+      const cannon = stage.cannon;
+
+      // 方向ベクトルを正規化
+      const dx = targetPos.x - cannon.x;
+      const dy = targetPos.y - cannon.y;
+      const len = Math.hypot(dx, dy);
+      if (len === 0) return;
+
+      const speed = 10; // 発射初速(px/step)。暫定値
+      const vx = (dx / len) * speed;
+      const vy = (dy / len) * speed;
+
+      // Bullet Body 生成
+      const bulletRadius = 5;
+      const bullet = Bodies.circle(cannon.x, cannon.y, bulletRadius, {
+        restitution: 1,
+        friction: 0,
+        frictionAir: 0,
+        label: 'bullet',
+      });
+
+      Body.setVelocity(bullet, { x: vx, y: vy });
+
+      // World へ追加
+      Composite.add(engine.world, bullet);
+
+      // フェーズを発射中に変更
+      dispatch({ type: ActionTypes.FIRE });
+    },
+    [engine, stage.cannon, dispatch],
+  );
+
+  // ドラッグ操作のハンドリング
+  const [dragState, dragHandlers] = useDrag(
+    (pos: Point) => {
+      // ドラッグ開始時
+      if (state.phase === Phase.AIMING) {
+        setCurrentMousePos(pos);
+      }
+    },
+    (_startPos: Point, currentPos: Point) => {
+      // ドラッグ中
+      if (state.phase === Phase.AIMING) {
+        setCurrentMousePos(currentPos);
+      }
+    },
+    (_startPos: Point, endPos: Point) => {
+      // ドラッグ終了時
+      setCurrentMousePos(null);
+      // 弾を発射
+      if (state.phase === Phase.AIMING) {
+        handleShoot(endPos);
+      }
+    },
+  );
+
+  // AimGuide フック
+  const { aimPath } = useAimGuide(
+    stage.cannon,
+    currentMousePos || stage.cannon,
+    stage.maxBounce,
+    { width, height },
+    stage.walls,
+  );
 
   // 描画ループ
   useEffect(() => {
@@ -124,6 +201,24 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         }
       });
 
+      // AimGuide 描画 (ドラッグ中かつAIMINGフェーズ)
+      if (
+        state.phase === Phase.AIMING &&
+        dragState.isDragging &&
+        aimPath.length > 1
+      ) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]); // 点線パターン
+        ctx.beginPath();
+        ctx.moveTo(aimPath[0].x, aimPath[0].y);
+        for (let i = 1; i < aimPath.length; i += 1) {
+          ctx.lineTo(aimPath[i].x, aimPath[i].y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]); // 点線パターンをリセット
+      }
+
       animationId = requestAnimationFrame(draw);
     };
 
@@ -133,7 +228,16 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     return () => {
       if (animationId) cancelAnimationFrame(animationId);
     };
-  }, [walls, width, height, engine, stage]);
+  }, [
+    walls,
+    width,
+    height,
+    engine,
+    stage,
+    state.phase,
+    dragState.isDragging,
+    aimPath,
+  ]);
 
   useEffect(() => {
     if (!engine) return;
@@ -170,41 +274,19 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     }
   }, [state.phase, engine]);
 
-  // クリックで弾を生成して発射
+  // レガシークリックハンドラー（ドラッグ未対応時のフォールバック）
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!engine) return;
+    // ドラッグ操作時はクリックイベントを無視
+    if (dragState.isDragging) return;
+
+    if (!engine || state.phase !== Phase.AIMING) return;
 
     // Canvas 座標系へ変換
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    // 砲台位置
-    const cannon = stage.cannon;
-
-    // 方向ベクトルを正規化
-    const dx = clickX - cannon.x;
-    const dy = clickY - cannon.y;
-    const len = Math.hypot(dx, dy);
-    if (len === 0) return;
-
-    const speed = 10; // 発射初速(px/step)。暫定値
-    const vx = (dx / len) * speed;
-    const vy = (dy / len) * speed;
-
-    // Bullet Body 生成
-    const bulletRadius = 5;
-    const bullet = Bodies.circle(cannon.x, cannon.y, bulletRadius, {
-      restitution: 1,
-      friction: 0,
-      frictionAir: 0,
-      label: 'bullet',
-    });
-
-    Body.setVelocity(bullet, { x: vx, y: vy });
-
-    // World へ追加
-    Composite.add(engine.world, bullet);
+    handleShoot({ x: clickX, y: clickY });
   };
 
   // target Body を World に追加 (一度だけ)
@@ -262,6 +344,10 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
       className="h-[720px] w-[960px] border bg-zinc-800"
       data-testid="game-canvas"
       onClick={handleClick}
+      onPointerDown={dragHandlers.onPointerDown}
+      onPointerMove={dragHandlers.onPointerMove}
+      onPointerUp={dragHandlers.onPointerUp}
+      style={{ touchAction: 'none' }} // タッチデバイスでのスクロールを防止
     />
   );
 };
