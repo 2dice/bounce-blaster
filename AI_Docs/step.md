@@ -459,7 +459,7 @@ drag hook→aimGuide calc→canvas draw→phase 切替→tests→commit
 補足 :  
 点線描画は offscreenCanvas で毎 frame 消去→再描画。FPS 低下が見えた場合は requestAnimationFrame 内で redraw を 60fps から 30fps へ間引く。
 
-# Step13　視覚エフェクト（フラッシュ・トレイル・火花）
+# Step13　視覚エフェクト（フラッシュ・トレイル・火花）(done)
 
 参照(view_fileコマンド等で取得) :
 

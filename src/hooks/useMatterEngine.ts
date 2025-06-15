@@ -22,6 +22,10 @@ export interface UseMatterEngineOptions {
    * bullet と target の衝突時に呼ばれるコールバック
    */
   onBulletTargetCollision?: () => void;
+  /**
+   * bullet と cannon の衝突時に呼ばれるコールバック（自滅判定）
+   */
+  onBulletCannonCollision?: () => void;
 }
 
 export interface UseMatterEngineReturn {
@@ -51,6 +55,7 @@ export const useMatterEngine = (
     height,
     wallThickness = 20,
     onBulletTargetCollision,
+    onBulletCannonCollision,
   } = options;
 
   // Engine の生成は一度だけ行う
@@ -149,6 +154,34 @@ export const useMatterEngine = (
       Events.off(engine, 'collisionStart', listener);
     };
   }, [engine, onBulletTargetCollision]);
+
+  // bullet × cannon 衝突検知（自滅判定）
+  useEffect(() => {
+    if (!onBulletCannonCollision) return;
+
+    const listener = (event: Matter.IEventCollision<Matter.Engine>) => {
+      // event.pairs: Array<Matter.Pair>
+      event.pairs.forEach((pair: Matter.Pair) => {
+        const { bodyA, bodyB } = pair;
+        const labels = [bodyA.label, bodyB.label];
+        if (labels.includes('bullet') && labels.includes('cannon')) {
+          // 自滅コールバックを先に呼ぶ
+          onBulletCannonCollision();
+
+          // bullet Body を World から除去
+          const bulletBody = bodyA.label === 'bullet' ? bodyA : bodyB;
+          if (bulletBody) {
+            Composite.remove(engine.world, bulletBody, true);
+          }
+        }
+      });
+    };
+
+    Events.on(engine, 'collisionStart', listener);
+    return () => {
+      Events.off(engine, 'collisionStart', listener);
+    };
+  }, [engine, onBulletCannonCollision]);
 
   // 衝突カテゴリ値を設定 (design.md 6-3. 衝突カテゴリに基づく)
   const bulletCategory = 0x0002; // 0x0002 = bullet

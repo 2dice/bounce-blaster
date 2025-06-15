@@ -19,7 +19,7 @@ File: AI_Docs/step.md
 # Step10　Next-Stage 自動遷移 & OverlayResult (done) (StartLine=375, EndLine=394)
 # Step11　ControlBar & MaxBounceSelect → StageGenerator 連携 (done) (StartLine=395, EndLine=417)
 # Step12　AimGuide (予測反射ライン) (done) (StartLine=418, EndLine=460)
-# Step13　視覚エフェクト（フラッシュ・トレイル・火花） (StartLine=461, EndLine=493)
+# Step13　視覚エフェクト（フラッシュ・トレイル・火花）(done) (StartLine=461, EndLine=493)
 # Step14　DebugPanel & FPS Counter (StartLine=494, EndLine=518)
 # Step15　レスポンシブ対応 & リサイズハンドリング (StartLine=519, EndLine=543)
 # Step16　パフォーマンス & GC リークチェック (StartLine=544, EndLine=563)
