@@ -193,7 +193,8 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
 
       // グリッド描画（デバッグ用）
       if (state.showGrid) {
-        const CELL_SIZE = 96; // 960 / 10 = 96px per cell
+        const GRID_COUNT = 10;
+        const CELL_SIZE = width / GRID_COUNT;
         ctx.strokeStyle = '#444444';
         ctx.lineWidth = 1;
 
