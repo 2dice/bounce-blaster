@@ -32,6 +32,7 @@ export interface Stage {
   readonly target: Point; // ターゲット中心
   readonly walls: Rect[]; // Static blocks
   readonly solution: Point[]; // バウンド点列 (内部デバッグ用)
+  readonly seed: number; // ステージ生成シード値
 }
 
 /**
@@ -70,4 +71,5 @@ export interface GameState {
   readonly bounceCount: number;
   readonly progress: number; // ステージ生成進捗 (0-100)
   readonly error?: string | null; // エラーメッセージ
+  readonly showGrid: boolean; // デバッグ用グリッド表示フラグ
 }

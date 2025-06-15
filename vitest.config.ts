@@ -11,6 +11,9 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**'],
     setupFiles: ['./tests/setup.ts'],
   },
+  define: {
+    __DEV__: JSON.stringify(true),
+  },
   resolve: {
     alias: {
       '@': '/src',

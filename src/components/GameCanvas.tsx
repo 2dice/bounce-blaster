@@ -191,6 +191,29 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
 
       ctx.clearRect(0, 0, width, height);
 
+      // グリッド描画（デバッグ用）
+      if (state.showGrid) {
+        const CELL_SIZE = 96; // 960 / 10 = 96px per cell
+        ctx.strokeStyle = '#444444';
+        ctx.lineWidth = 1;
+
+        // 縦線
+        for (let x = 0; x <= width; x += CELL_SIZE) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+
+        // 横線
+        for (let y = 0; y <= height; y += CELL_SIZE) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+      }
+
       walls.forEach(wall => {
         const { vertices } = wall;
         ctx.beginPath();
@@ -304,6 +327,7 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     engine,
     stage,
     state.phase,
+    state.showGrid,
     dragState.isDragging,
     aimPath,
   ]);

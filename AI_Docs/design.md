@@ -218,17 +218,13 @@ src/
 ├─ index.css               # Tailwind の base/components/utilities インポート
 ├─ components/
 │  ├─ GameCanvas.tsx       # Canvas 要素・描画・入力をまとめる
-│  ├─ CanvasLayer.ts       # off-screen キャンバス 1 枚を管理するユーティリティ
 │  ├─ ControlBar.tsx       # 画面下部 UI コンテナ
 │  ├─ MaxBounceSelect.tsx  # 最大バウンド数を選択するセレクトボックス
-│  ├─ DevFpsCounter.tsx    # DEV 時に平均 FPS を表示
+│  ├─ DebugPanel.tsx       # DEV 用デバッグ情報まとめ表示（FPS・シード・グリッド切替）
 │  ├─ OverlayGenerating.tsx# ステージ生成中の黒半透明オーバーレイ
+│  ├─ OverlayError.tsx     # エラー時のオーバーレイ
 │  ├─ ProgressBar.tsx      # 進捗バー UI
-│  ├─ OverlayResult.tsx    # 成功／失敗結果を 1 秒表示するオーバーレイ
-│  └─ debug/
-│     ├─ DebugPanel.tsx        # DEV 用デバッグ情報まとめ表示
-│     ├─ StageSeedDisplay.tsx  # 現在ステージのシード値を表示・コピー
-│     └─ ToggleGridButton.tsx  # 背景グリッドの表示 ON/OFF ボタン
+│  └─ OverlayResult.tsx    # 成功／失敗結果を 1 秒表示するオーバーレイ
 │
 ├─ contexts/
 │  ├─ GameContext.ts       # ゲーム状態管理用のContext定義
@@ -242,31 +238,24 @@ src/
 │  ├─ useDrag.ts           # pointerdown / move / up を抽象化したフック
 │  └─ useFpsMeter.ts       # requestAnimationFrame から FPS を算出
 │
-├─ engine/
-│  └─ particle/
-│     ├─ Particle.ts           # 個々のパーティクルの状態クラス
-│     ├─ ParticlePool.ts       # パーティクルのオブジェクトプール
-│     └─ ParticleEngine.ts     # パーティクル生成・更新・描画を統括
+├─ utils/
+│  ├─ ParticleEngine.ts    # パーティクル生成・更新・描画を統括
+│  ├─ geom.ts              # 鏡像法・線分×矩形交差など幾何ヘルパ
+│  ├─ intersect.ts         # 交差判定ユーティリティ
+│  └─ stageGenerator.ts    # ステージ自動生成ロジック
 │
 ├─ models/
 │  ├─ types.ts             # Point / Rect / Stage / GameState の型宣言
 │  ├─ enums.ts             # Phase や ActionTypes の列挙型
 │  └─ reducer.ts           # useReducer 用の gameReducer 実装
 │
-├─ utils/
-│  ├─ geom.ts              # 鏡像法・線分×矩形交差など幾何ヘルパ
-│  ├─ rand.ts              # シード付き乱数生成ユーティリティ
-│  ├─ calcViewport.ts      # 画面リサイズ時のキャンバスサイズ計算
-│  └─ particlePool.testRefs.ts # パーティクルプールのテスト補助関数
-│
 └─ assets/
-    └─ sprites/
-       ├─ spark.png         # ヒット火花スプライト
-       └─ flash.png         # 発射フラッシュスプライト
+    └─ react.svg            # React アイコン
 
 tests/
 ├─ App.test.tsx            # ルートコンポーネントの単体テスト
 ├─ bulletBounce.test.ts    # バウンド検出の妥当性テスト
+├─ bulletCannonCollision.test.ts # 弾と砲台の衝突検出テスト
 ├─ bulletTargetCollision.test.ts  # 衝突検出の妥当性テスト
 ├─ reducer.test.ts         # gameReducer のフェーズ遷移テスト
 ├─ reducerBounceCount.test.ts # 最大バウンド数ロジックの単体テスト
@@ -274,9 +263,15 @@ tests/
 ├─ useMatterEngine.test.tsx  # useMatterEngine の妥当性テスト
 ├─ useStageGenerator.test.ts  # useStageGenerator の妥当性テスト
 ├─ aimGuide.test.ts        # useAimGuide 出力の妥当性テスト
-├─ particleEngine.test.ts  # パーティクル生成と寿命ロジックのテスト
+├─ ParticleEngine.test.ts  # パーティクル生成と寿命ロジックのテスト
 ├─ mirrorSolve.test.ts     # 鏡像法計算ユーティリティの単体テスト
-├─ viewport.test.ts        # calcViewport のレスポンシブ計算テスト
+├─ debugPanel.test.ts      # デバッグパネルのグリッド切り替え機能テスト
+├─ autoStageTransition.test.tsx # ステージ自動遷移テスト
+├─ gameCanvasAimGuide.test.tsx # GameCanvasとAimGuideの統合テスト
+├─ maxBounceSelect.test.tsx # MaxBounceSelectコンポーネントテスト
+├─ OverlayError.test.tsx   # OverlayErrorコンポーネントテスト
+├─ OverlayGenerating.test.tsx # OverlayGeneratingコンポーネントテスト
+├─ OverlayResult.test.tsx  # OverlayResultコンポーネントテスト
 └─ setup.ts                # Vitest グローバルセットアップ
 
 .lintstagedrc               # lint-staged 設定

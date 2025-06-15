@@ -34,5 +34,6 @@ export enum ActionTypes {
   RETRY_GENERATION = 'RETRY_GENERATION',
   NEXT_STAGE = 'NEXT_STAGE',
   SET_MAX_BOUNCE = 'SET_MAX_BOUNCE',
+  TOGGLE_GRID = 'TOGGLE_GRID',
 }
 /* eslint-enable no-unused-vars */
