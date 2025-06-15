@@ -3,13 +3,16 @@ import { Point, Particle, ParticleType } from '../models/types';
 /**
  * パーティクルエフェクトを管理するエンジンクラス
  * Canvas 2D APIで描画を行う
+ * パーティクル数を制限してメモリ使用量を抑制
  */
 export class ParticleEngine {
   private particles: Particle[] = [];
   private idCounter = 0;
+  private readonly maxParticles = 200; // パーティクル数の上限
 
   /**
    * パーティクルを生成して追加
+   * 最大数を超えた場合は古いパーティクルを削除
    */
   addParticle(
     position: Point,
@@ -19,6 +22,11 @@ export class ParticleEngine {
       Pick<Particle, 'color' | 'radius' | 'alpha' | 'lifespan'>
     >,
   ): void {
+    // 最大数チェック
+    if (this.particles.length >= this.maxParticles) {
+      this.particles.shift(); // 最も古いパーティクルを削除
+    }
+
     const defaults = this.getParticleDefaults(type);
     const particle: Particle = {
       id: `particle_${this.idCounter++}`,
@@ -35,6 +43,7 @@ export class ParticleEngine {
 
   /**
    * 発射時フラッシュエフェクト生成
+   * 砲台位置に白い光の拡散エフェクトを0.3秒間表示
    */
   createFlashEffect(position: Point): void {
     this.addParticle(position, { x: 0, y: 0 }, 'flash', {
@@ -47,6 +56,7 @@ export class ParticleEngine {
 
   /**
    * 弾のトレイルエフェクト生成
+   * 弾の軌跡に小さな赤い残像を生成（5フレームごとに呼び出し）
    */
   createTrailEffect(position: Point): void {
     // 小さなランダム速度でトレイルパーティクルを生成
@@ -67,6 +77,7 @@ export class ParticleEngine {
 
   /**
    * ヒット時火花エフェクト生成
+   * 指定位置から放射状に黄色い火花を拡散
    */
   createSparkEffect(position: Point, count = 20): void {
     for (let i = 0; i < count; i++) {

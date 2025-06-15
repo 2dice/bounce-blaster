@@ -47,27 +47,20 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
     // ヒット時火花エフェクト生成
     particleEngineRef.current.createSparkEffect(stage.target, 20);
     dispatch({ type: ActionTypes.SUCCESS });
-    // eslint-disable-next-line no-console
-    console.log('success');
   }, [dispatch, stage.target]);
 
-  // 自滅判定コールバック
-  const handleBulletCannonCollision = useCallback(() => {
-    // eslint-disable-next-line no-console
-    console.log(
-      '自滅エフェクト開始 - パーティクル数:',
-      particleEngineRef.current.getParticleCount(),
-    );
+  // 自滅用の爆発エフェクト生成
+  const createSelfDestructionEffect = useCallback((position: Point) => {
+    // 標準の火花エフェクト
+    particleEngineRef.current.createSparkEffect(position, 25);
 
-    // 砲台ヒット時エフェクト生成（赤色で目立つように）
-    particleEngineRef.current.createSparkEffect(stage.cannon, 25);
     // 追加の爆発エフェクト（大きな赤い火花）
     for (let i = 0; i < 8; i++) {
       const angle = (Math.PI * 2 * i) / 8;
       const distance = 30 + Math.random() * 20;
       const pos = {
-        x: stage.cannon.x + Math.cos(angle) * distance,
-        y: stage.cannon.y + Math.sin(angle) * distance,
+        x: position.x + Math.cos(angle) * distance,
+        y: position.y + Math.sin(angle) * distance,
       };
       particleEngineRef.current.addParticle(pos, { x: 0, y: 0 }, 'spark', {
         color: '#ff0000',
@@ -76,17 +69,13 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
         lifespan: 1.0,
       });
     }
+  }, []);
 
-    // eslint-disable-next-line no-console
-    console.log(
-      '自滅エフェクト完了 - パーティクル数:',
-      particleEngineRef.current.getParticleCount(),
-    );
-
+  // 自滅判定コールバック
+  const handleBulletCannonCollision = useCallback(() => {
+    createSelfDestructionEffect(stage.cannon);
     dispatch({ type: ActionTypes.FAIL });
-    // eslint-disable-next-line no-console
-    console.log('self-destruction');
-  }, [dispatch, stage.cannon]);
+  }, [createSelfDestructionEffect, dispatch, stage.cannon]);
 
   // Engine & Walls を取得
   const { engine, walls } = useMatterEngine({
@@ -343,8 +332,6 @@ const GameCanvas = ({ width, height }: GameCanvasProps) => {
   // フェイルフェーズ検知: バウンド超過時
   useEffect(() => {
     if (state.phase === Phase.FAIL) {
-      // eslint-disable-next-line no-console
-      console.log('fail');
       // バレットをワールドから除去
       engine.world.bodies.forEach(body => {
         if (body.label === 'bullet') {
